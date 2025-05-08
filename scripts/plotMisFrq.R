@@ -1,0 +1,22 @@
+rm(list=ls())
+gc()
+
+args = commandArgs(trailingOnly=TRUE)
+input <- args[1]
+
+sample_missingness <- read.table(sprintf("%s.imiss",input), header = T)
+snp_missingness <- read.table(sprintf("%s.lmiss",input), header = T)
+freq <- read.table(sprintf("%s.frq",input), header = T)
+het <- read.table(sprintf("%s.het",input),header = T)
+pdf(sprintf("%s.sample_missingness.pdf",input))
+hist(as.numeric(sample_missingness$F_MISS))
+dev.off()
+pdf(sprintf("%s.snp_missingness.pdf",input))
+hist(as.numeric(snp_missingness$F_MISS))
+dev.off()
+pdf(sprintf("%s.frq.pdf",input))
+hist(as.numeric(freq$MAF),main = "MAF distribution", xlab = "MAF")
+dev.off()
+pdf(sprintf("%s.het.pdf",input))
+hist(as.numeric(het$F),main = "Het distribution", xlab = "het")
+dev.off()

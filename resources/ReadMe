@@ -1,0 +1,5 @@
+harmonised_list.txt	http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/harmonised_list.txt
+
+harmonised_studies.txt filtered from studies_of_efo_ids.txt using harmonised_list.txt and exclude_studies.txt removed from resulting list and SNP count == NA and SNP count > 100000 included in to final_study_list.txt.
+
+exclude_studies.txt -> employment status measurement
