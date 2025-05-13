@@ -1,0 +1,17 @@
+studies_to_calculate: /data/projects/on_going/PRScope/output/gwas_list/gwas_search.txt
+results_path: /data/projects/on_going/PRScope/output
+results_directory_name: calculated_pgs
+results_data_table_name: all_pgs_datatable
+target_data_path: /data/projects/on_going/PRScope/output/qced_genotype/corrected_hg38/data_test_0005
+target_data_prefix: psycourse_scz_control_info_08.FINAL # name without extension (bim,bed,fam)
+gwas_data_path: /data/projects/on_going/PRScope/output/qced_gwas
+prsice_path:  /data/data/PRSice      # default is repository/main/tools/PRSice
+clumping_reference_path: /data/projects/on_going/PRScope/input/reference
+clumping_reference_prefix: eur_hg38.phase3 # name without extension (bim,bed,fam)
+clump_kb: 500
+clump_p: 1
+clump_r2: 0.2
+base_maf: 0.01
+p_values: "0.05,0.1,0.5,1"
+min_number_of_snps_included: 100
+min_number_of_snps_included_of_the_highest_p_value: 1000

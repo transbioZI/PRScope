@@ -1,0 +1,15 @@
+target_data: /data/projects/on_going/PRScope/input/genotype
+genotype_data_name: test_2 # without extension [bim,bed,fam]
+output_path: /data/projects/on_going/PRScope/output/qced_genotype
+processed_data_directory_name: data_test_0005
+convert_rsid: TRUE # if true, convert to CHR:POS format
+plink: /data/data/plink        # default is repository/main/tools/plink
+plink2: /data/data/plink2         # default is repository/main/tools/plink2
+shallow_genotype_missingness: 0.2
+deep_genotype_missingness: 0.02
+shallow_sample_missingness: 0.2
+deep_sample_missingness: 0.02
+maf: 0.005
+hwe: 1e-6
+heterozygosity: 3 # Threshold for acceptable deviation from mean heterozygosity per individual.
+relatedness: 0.1875 #Threshold for acceptable proportion of IBD between pair of individuals.

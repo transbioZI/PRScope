@@ -1,0 +1,13 @@
+name: prscope
+channels:
+  - defaults
+  - conda-forge
+  - bioconda
+  - r
+dependencies:
+  - r-base=4.4.0
+  - r-essentials
+  - r-tidyverse
+  - r-dplyr
+  - python=3.12.1
+  - snakemake
