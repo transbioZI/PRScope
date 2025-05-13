@@ -1,8 +1,0 @@
-Jul-11 09:45:19.146 [main] DEBUG nextflow.cli.Launcher - $> nextflow run main.nf --grm_plink_input 's3://lifebit-featured-datasets/pipelines/simulate/ukb-simulated-results/simulated_hapgen-100000ind-updated.merged.*{bed,bim,fam}' --pheno_data 's3://lifebit-featured-datasets/pipelines/biobank-gwas/traits_design_matrix_control_all_case_2.phe' --trait_type binary
-Jul-11 09:45:19.239 [main] INFO  nextflow.cli.CmdRun - N E X T F L O W  ~  version 22.04.4
-Jul-11 09:45:19.281 [main] DEBUG nextflow.cli.Launcher - Operation aborted
-nextflow.exception.AbortOperationException: Cannot find script file: main.nf
-	at nextflow.cli.CmdRun.getScriptFile(CmdRun.groovy:421)
-	at nextflow.cli.CmdRun.run(CmdRun.groovy:287)
-	at nextflow.cli.Launcher.run(Launcher.groovy:480)
-	at nextflow.cli.Launcher.main(Launcher.groovy:639)
