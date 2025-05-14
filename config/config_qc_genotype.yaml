@@ -1,10 +1,10 @@
-target_data: /data/projects/on_going/PRScope/input/genotype
-genotype_data_name: test_2 # without extension [bim,bed,fam]
-output_path: /data/projects/on_going/PRScope/output/qced_genotype
-processed_data_directory_name: data_test_0005
+target_data:
+genotype_data_name:  # without extension [bim,bed,fam]
+output_path:
+processed_data_directory_name:
 convert_rsid: TRUE # if true, convert to CHR:POS format
-plink: /data/data/plink        # default is repository/main/tools/plink
-plink2: /data/data/plink2         # default is repository/main/tools/plink2
+plink:       # default is repository/main/tools/plink
+plink2:     # default is repository/main/tools/plink2
 shallow_genotype_missingness: 0.2
 deep_genotype_missingness: 0.02
 shallow_sample_missingness: 0.2

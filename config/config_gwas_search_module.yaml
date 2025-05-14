@@ -1,8 +1,8 @@
-efo_ids: /data/projects/on_going/PRScope/input/efo_ids.txt
-output_path_gwas_search: /data/projects/on_going/PRScope/output/gwas_list
-output_name_gwas_search: gwas_search
+efo_ids:
+output_path_gwas_search:
+output_name_gwas_search:
 sample_size: 10000
 population: European
 number_of_snps: 250000
-publication_date: 2014-01-01
+publication_date: 2018-01-01
 harmonised_list: http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/harmonised_list.txt

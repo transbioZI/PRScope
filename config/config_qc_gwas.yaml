@@ -1,4 +1,4 @@
-study_list: /data/projects/on_going/PRScope/output/gwas_list/gwas_search.txt
-output_path_qced_gwas: /data/projects/on_going/PRScope/output/qced_gwas
-maf_file: /data/projects/on_going/PRScope/input/reference/eur_hg38.phase3.frq
-harmonised_list: http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/harmonised_list.txt
+study_list:
+output_path_qced_gwas:
+maf_file:
+harmonised_list:
