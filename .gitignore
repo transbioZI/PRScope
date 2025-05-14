@@ -6,3 +6,4 @@ output/qced_gwas/*
 output/qced_genotype/*
 output/gwas_list/*
 output/calculated_pgs_ldpred/*
+output/calculated_pgs_prsice/*

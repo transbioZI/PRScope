@@ -18,4 +18,5 @@ rule find_efo_studies:
     shell:
         """
         Rscript {config[repository]}/scripts/filter_studies_by_efo.R {input.harm} {config[efo_ids]} {config[output_path_gwas_search]} {config[output_name_gwas_search]} {config[sample_size]} {config[number_of_snps]} {config[publication_date]} {config[population]}
+        Rscript {config[repository]}/scripts/studyList_GWAS_Catalog.R {config[output_path_gwas_search]}/{config[output_name_gwas_search]}.txt
         """
