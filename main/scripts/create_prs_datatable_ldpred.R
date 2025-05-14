@@ -26,7 +26,6 @@ studies_to_remove = c()
 studies_empty = c()
 for(f in files) {
   ff= sprintf("%s/%s.%s", prs_path, f,mode)
-  print(ff)
   if(!file.exists(ff) || file.size(ff) == 0L || is.na(file.size(ff))) {
     if(file.size(ff) == 0L || is.na(file.size(ff))) {
       studies_empty = c(studies_empty,f)
@@ -74,38 +73,14 @@ for(f in files_exist) {
   }
 }
 
-df <- read.table(sprintf("%s/%s.%s", prs_path, files_exist_2[1],mode), header = T)
-for(f in files_exist_2[2:length(files_exist_2)]) {
-  df2 <- read.table(sprintf("%s/%s.%s", prs_path, f, mode), header = T)
-  df <- merge(df,df2, by = c("FID","IID"))
+if(length(files_exist_2) != 0) {
+  df <- read.table(sprintf("%s/%s.%s", prs_path, files_exist_2[1],mode), header = T)
+  for(f in files_exist_2[2:length(files_exist_2)]) {
+    df2 <- read.table(sprintf("%s/%s.%s", prs_path, f, mode), header = T)
+    df <- merge(df,df2, by = c("FID","IID"))
+  }
+  write.table(df[,-1], paste0(prs_path,"/",results_table,".tsv"), row.names = F, col.names = T, quote = F)
+} else {
+  write.table(data.frame(x="empty"), paste0(prs_path,"/",results_table,".tsv"), row.names = F, col.names = T, quote = F)
 }
 
-write.table(df[,-1], paste0(prs_path,"/",results_table,".tsv"), row.names = F, col.names = T, quote = F)
-
-PRS_data = read.table(paste0(prs_path,"/",results_table,".tsv"), sep=" ", header=TRUE)
-print(dim(PRS_data))
-#select(PRS_data, starts_with("Pt_0.0001"))
-
-if(length(studies_to_remove) !=0) {
-  writeLines(studies_to_remove, paste0(prs_path,"/",results_table,"_studies_not_included.txt"))
-}
-
-if(length(studies_empty) !=0) {
-  writeLines(studies_empty, paste0(prs_path,"/",results_table,"_studies_empty.txt"))
-}
-
-if(length(remove_low_her_and_ind) !=0) {
-  writeLines(remove_low_her_and_ind, paste0(prs_path,"/",results_table,"_studies_threshold.txt"))
-}
-
-writeLines(files_exist_2, paste0(prs_path,"/",results_table,"_studies_included.txt"))
-print("Number of studies included:")
-print(length(files_exist_2))
-print("Number of studies not included:")
-print(length(studies_to_remove))
-print("Number of studies empty:")
-print(length(studies_empty))
-print("Number of studies thresholding:")
-print(length(remove_low_her_and_ind))
-print("Samples X PRSs:")
-print(dim(df[,-1]))
