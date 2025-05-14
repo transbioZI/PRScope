@@ -3,7 +3,7 @@
 #module load R
 #conda activate snakemake
 
-REPOSITORY_PATH=/data/projects/on_going/PRScope
+REPOSITORY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NUMBER_OF_THREADS=5
 cd $REPOSITORY_PATH
 
