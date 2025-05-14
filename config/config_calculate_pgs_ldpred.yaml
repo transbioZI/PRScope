@@ -1,0 +1,15 @@
+studies_to_calculate_ldpred: /data/projects/on_going/PRScope/output/gwas_list/gwas_search.txt
+results_path_ldpred: /data/projects/on_going/PRScope/output
+results_directory_name_ldpred: calculated_pgs_ldpred
+results_data_table_name_ldpred: pgs_datatable_ldpred
+mode : auto # or inf
+imputation_mode : random
+ldpred2_ref: /data/references/ldpred2_ref # clone : https://github.com/comorment/ldpred2_ref
+target_data_path_ldpred: /data/projects/on_going/PRScope/output/qced_genotype/corrected_hg38/data_test_0005
+target_data_prefix_ldpred: EUR.FINAL # name without extension (bim,bed,fam)
+gwas_data_path_ldpred: /data/projects/on_going/PRScope/output/qced_gwas
+ldpred_path:     # default is repository/main/tools/ldpred2
+intercept_max: 1.2
+intercept_min: 0.95
+heritability: 0.01
+hyper_p_max: 0.9

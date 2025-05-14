@@ -15,7 +15,7 @@ def studies_to_calculate():
 
 rule all:
     input:
-        config['results_path_ldpred']+'/'+config['results_directory_name_ldpred']+'/'+config['results_data_table_name_ldpred']+'.tsv'
+        expand(config['results_path_ldpred']+'/'+config['results_directory_name_ldpred']+'/{study}.her' , study = studies_to_calculate())
 
 rule convert_plink_file_rds:
     input:
@@ -45,13 +45,13 @@ rule calculate_LDSC:
         rds = config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.' + config['imputation_mode'] + '.nomiss.rds',
         gwas = ancient(config['gwas_data_path_ldpred'] + '/{study}.qced.h.tsv')
     output:
-        config['results_path_ldpred']+'/'+config['results_directory_name_ldpred'] + '/{study}' + '.' + config['mode']
+        config['results_path_ldpred']+'/'+config['results_directory_name_ldpred'] + '/{study}' + '.her'
     shell:
         """
         mkdir -p {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}
         mkdir -p {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp
         mkdir -p {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study}
-        Rscript {ldpred_path}/ldpred2.R \
+        Rscript {ldpred_path}/calculate_heritability_intercept.R \
             --ldpred-mode {config[mode]} \
             --col-stat BETA \
             --col-stat-se standard_error \
@@ -74,15 +74,5 @@ rule calculate_LDSC:
             --tmp-dir {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study} \
             --hyper-p-max {config[hyper_p_max]}
         rm -f -r {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study}
-        touch {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/{wildcards.study}.{config[mode]}
-        """
-
-rule create_pgs_data_table:
-    input:
-        expand(config['results_path_ldpred']+'/'+config['results_directory_name_ldpred']+'/{study}'+ '.' + config['mode'] , study = studies_to_calculate())
-    output:
-        config['results_path_ldpred']+'/'+config['results_directory_name_ldpred']+'/'+config['results_data_table_name_ldpred']+'.tsv'
-    shell:
-        """
-        Rscript {config[repository]}/scripts/create_prs_datatable_ldpred.R {config[results_path_ldpred]}/{config[results_directory_name_ldpred]} {config[mode]} {config[studies_to_calculate_ldpred]} {config[intercept_max]} {config[intercept_min]} {config[heritability]} {config[results_data_table_name_ldpred]}
+        touch {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/{wildcards.study}.her
         """

@@ -5,9 +5,17 @@ channels:
   - bioconda
   - r
 dependencies:
-  - r-base=4.4.0
+  - r-base=4.4.1
   - r-essentials
   - r-tidyverse
   - r-dplyr
+  - r-bigsnpr
+  - r-bigstatsr
+  - r-rngtools
+  - r-foreach
+  - r-stringr
   - python=3.12.1
   - snakemake
+  - r-ggplot2
+  - r-tibble
+  - r-tidyr

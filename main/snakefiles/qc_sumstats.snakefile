@@ -7,6 +7,8 @@ def studies_to_calculate():
     return studies
 
 def read_harmonised_list():
+    os.system("mkdir -p " + config['output_path_qced_gwas'])
+    os.system("wget -O " + config['output_path_qced_gwas']+"/harmonised_list.txt "+ config["harmonised_list"])
     harm = config['output_path_qced_gwas']+"/harmonised_list.txt"
     if not os.path.isfile(harm):
         urllib.request.urlretrieve(config['harmonised_list'], harm)
@@ -33,16 +35,7 @@ def get_keys():
 
 rule all:
     input:
-        config['output_path_qced_gwas']+"/harmonised_list.txt",
         expand(config['output_path_qced_gwas'] + "/{study}.qced.h.tsv", study = get_keys())
-
-rule download_harmonised_list:
-    output:
-        config['output_path_qced_gwas']+"/harmonised_list.txt"
-    shell:
-        """
-        wget -O {output} {config[harmonised_list]}
-        """
 
 rule download_study:
     output:

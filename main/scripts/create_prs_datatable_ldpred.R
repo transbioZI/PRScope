@@ -9,9 +9,10 @@ args = commandArgs(trailingOnly=TRUE)
 prs_path = args[1]
 mode = args[2]
 study_list = args[3]
-intercept_upper_thr = 100
-intercept_lower_thr = 0
-heritability_thr = 0
+intercept_upper_thr = args[4]
+intercept_lower_thr = args[5]
+heritability_thr = args[6]
+results_table = args[7]
 
 files = unique(readLines(study_list))
 
@@ -25,6 +26,7 @@ studies_to_remove = c()
 studies_empty = c()
 for(f in files) {
   ff= sprintf("%s/%s.%s", prs_path, f,mode)
+  print(ff)
   if(!file.exists(ff) || file.size(ff) == 0L || is.na(file.size(ff))) {
     if(file.size(ff) == 0L || is.na(file.size(ff))) {
       studies_empty = c(studies_empty,f)
@@ -78,31 +80,25 @@ for(f in files_exist_2[2:length(files_exist_2)]) {
   df <- merge(df,df2, by = c("FID","IID"))
 }
 
-write.table(df[,-1], paste0(prs_path,"/resultPRSs.tsv"), row.names = F, col.names = T, quote = F)
+write.table(df[,-1], paste0(prs_path,"/",results_table,".tsv"), row.names = F, col.names = T, quote = F)
 
-PRS_data = read.table(paste0(prs_path,"/resultPRSs.tsv"), sep=" ", header=TRUE)
+PRS_data = read.table(paste0(prs_path,"/",results_table,".tsv"), sep=" ", header=TRUE)
 print(dim(PRS_data))
 #select(PRS_data, starts_with("Pt_0.0001"))
 
-pca = prcomp(PRS_data[,-1])$x[,1:2]
-pdf(paste0(prs_path,"/PCA_PRS.pdf"))
-plot(pca[,1], pca[,2])
-dev.off()
-
-
 if(length(studies_to_remove) !=0) {
-  writeLines(studies_to_remove, paste0(prs_path,"/studies_not_included.txt"))
+  writeLines(studies_to_remove, paste0(prs_path,"/",results_table,"_studies_not_included.txt"))
 }
 
 if(length(studies_empty) !=0) {
-  writeLines(studies_empty, paste0(prs_path,"/studies_empty.txt"))
+  writeLines(studies_empty, paste0(prs_path,"/",results_table,"_studies_empty.txt"))
 }
 
 if(length(remove_low_her_and_ind) !=0) {
-  writeLines(remove_low_her_and_ind, paste0(prs_path,"/studies_threshold.txt"))
+  writeLines(remove_low_her_and_ind, paste0(prs_path,"/",results_table,"_studies_threshold.txt"))
 }
 
-writeLines(files_exist_2, paste0(prs_path,"/studies_included.txt"))
+writeLines(files_exist_2, paste0(prs_path,"/",results_table,"_studies_included.txt"))
 print("Number of studies included:")
 print(length(files_exist_2))
 print("Number of studies not included:")

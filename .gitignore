@@ -1,3 +1,8 @@
 log/
 .snakemake/
 .RData
+input/reference/
+output/qced_gwas/*
+output/qced_genotype/*
+output/gwas_list/*
+output/calculated_pgs_ldpred/*
