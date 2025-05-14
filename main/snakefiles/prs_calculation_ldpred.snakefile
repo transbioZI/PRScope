@@ -72,7 +72,7 @@ rule calculate_LDSC:
             --ld-file {config[ldpred2_ref]}/ldref_hm3_plus/LD_with_blocks_chr@.rds \
             --geno-file-rds {input.rds} \
             --tmp-dir {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study} \
-            --hyper-p-max {config[hyper_p_max]}
+            --hyper-p-max {config[hyper_p_max]} || true
         rm -f -r {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study}
         touch {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/{wildcards.study}.{config[mode]}
         """
