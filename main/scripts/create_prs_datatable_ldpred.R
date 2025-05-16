@@ -75,9 +75,11 @@ for(f in files_exist) {
 
 if(length(files_exist_2) != 0) {
   df <- read.table(sprintf("%s/%s.%s", prs_path, files_exist_2[1],mode), header = T)
-  for(f in files_exist_2[2:length(files_exist_2)]) {
-    df2 <- read.table(sprintf("%s/%s.%s", prs_path, f, mode), header = T)
-    df <- merge(df,df2, by = c("FID","IID"))
+  if(length(files_exist_2) >1) {
+    for(f in files_exist_2[2:length(files_exist_2)]) {
+      df2 <- read.table(sprintf("%s/%s.%s", prs_path, f, mode), header = T)
+      df <- merge(df,df2, by = c("FID","IID"))
+    }
   }
   write.table(df[,-1], paste0(prs_path,"/",results_table,".tsv"), row.names = F, col.names = T, quote = F)
 } else {
