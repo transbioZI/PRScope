@@ -13,6 +13,7 @@ rule download_harmonised_list:
 rule find_efo_studies:
     input:
         harm = rules.download_harmonised_list.output
+    conda: "../environment.yaml"
     output:
         config['output_path_gwas_search']+ "/"+ config['output_name_gwas_search'] + ".txt"
     shell:

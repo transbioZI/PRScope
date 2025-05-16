@@ -36,9 +36,16 @@ repeat_ = 5 # repeat for random forest models
 features_sizes = c(1,3,6) # feature sizes
 features_sizes = sort(features_sizes)
 
+DISCOVERY_DATA = DiscoveryRES     # DELETE
+DISCOVERY_GROUP = DiscoveryGroup  # DELETE
+DISCOVERY_IDs = DiscoveryMeta[,2] # DELETE
+
+VALIDATION_DATA = ValidationRES     # DELETE
+VALIDATION_GROUP = ValidationGroup  # DELETE
+VALIDATION_IDs = ValidationMeta[,1]  # DELETE
+
 source("./biotype_identification/helper_scripts/helper_functions.R")
 source("./biotype_identification/helper_scripts/ML_functions.R")
-source("./biotype_identification/helper_scripts/readData.R")
 source("./biotype_identification/main_ml_code.R")
 source("./biotype_identification/helper_scripts/Plot_helper.R")
 source("./biotype_identification/helper_scripts/readResults.R")

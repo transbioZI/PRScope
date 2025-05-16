@@ -5,7 +5,6 @@ results_data_table_name:
 target_data_path:
 target_data_prefix:  # name without extension (bim,bed,fam)
 gwas_data_path:
-prsice_path:       # default is repository/main/tools/PRSice
 clumping_reference_path:
 clumping_reference_prefix:  # name without extension (bim,bed,fam)
 clump_kb: 500

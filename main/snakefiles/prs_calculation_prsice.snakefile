@@ -1,10 +1,5 @@
 import os
 
-prsice_path = config["prsice_path"]
-
-if prsice_path is None:
-    prsice_path = config["repository"] + "/tools/PRSice"
-
 def read_studies(path):
     with open(path) as file:
         return(file.read().splitlines())
@@ -21,17 +16,15 @@ rule calculate_PRS:
     input:
         sumstat = config['gwas_data_path'] + '/{study}.qced.h.tsv',
         bim_file = config['target_data_path'] + "/" + config['target_data_prefix'] + ".bim"
+    conda: "../environment.yaml"
     output:
         config['results_path']+'/'+config['results_directory_name']+'/{study}.all_score'
     params:
         target = config['target_data_path'] + "/" + config['target_data_prefix'],
         out = config['results_path']+'/'+config['results_directory_name']+'/{study}'
-    threads:
-        1
     shell:
         """
-        {prsice_path}/PRSice.R \
-        --prsice {prsice_path}/PRSice_linux \
+        PRSice \
         --base {input.sumstat} \
         --snp VARID \
         --no-default \
@@ -61,6 +54,7 @@ rule calculate_PRS:
 rule create_pgs_data_table:
     input:
         expand(config['results_path']+'/'+config['results_directory_name']+'/{study}.all_score' , study = studies_to_calculate())
+    conda: "../environment.yaml"
     output:
         config['results_path']+'/'+config['results_directory_name']+'/'+config['results_data_table_name'] + '_' + str(config['min_number_of_snps_included']) + '.tsv'
     shell:

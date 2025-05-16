@@ -1,9 +1,6 @@
 rm(list=ls())
 gc()
 
-if(!require(plinkQC)){
-    install.packages("plinkQC")
-}
 library("plinkQC")
 
 args = commandArgs(trailingOnly=TRUE)

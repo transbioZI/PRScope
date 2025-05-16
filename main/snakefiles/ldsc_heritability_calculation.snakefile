@@ -20,6 +20,7 @@ rule all:
 rule convert_plink_file_rds:
     input:
         config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.bed'
+    conda: "../environment.yaml"
     output:
         config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.rds',
         config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.bk'
@@ -33,6 +34,7 @@ rule impute:
     output:
         config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.' + config['imputation_mode'] + '.nomiss.rds',
         config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.' + config['imputation_mode'] + '.nomiss.bk'
+    conda: "../environment.yaml"
     shell:
         """
         cp {config[target_data_path_ldpred]}/{config[target_data_prefix_ldpred]}.rds {config[target_data_path_ldpred]}/{config[target_data_prefix_ldpred]}.{config[imputation_mode]}.nomiss.rds
@@ -46,6 +48,7 @@ rule calculate_LDSC:
         gwas = ancient(config['gwas_data_path_ldpred'] + '/{study}.qced.h.tsv')
     output:
         config['results_path_ldpred']+'/'+config['results_directory_name_ldpred'] + '/{study}' + '.her'
+    conda: "../environment.yaml"
     shell:
         """
         mkdir -p {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}

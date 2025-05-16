@@ -54,6 +54,7 @@ rule download_study:
 rule transform_study:
     input:
         rules.download_study.output
+    conda: "../environment.yaml"
     output:
         config['output_path_qced_gwas'] + "/{study}.qced.h.tsv"
     params:

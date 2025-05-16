@@ -5,7 +5,7 @@ output_name_gwas_search: gwas_search
 sample_size: 10000
 population: European
 number_of_snps: 250000
-publication_date: 2022-01-01
+publication_date: 2018-01-01
 harmonised_list: http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/harmonised_list.txt
 
 # GWAS QC module
@@ -19,9 +19,6 @@ genotype_data_name: EUR
 output_path: output/qced_genotype
 processed_data_directory_name: data_test_0005
 convert_rsid: TRUE
-maf: 0.005
-plink:         # default is repository/main/tools/plink
-plink2:          # default is repository/main/tools/plink2
 shallow_genotype_missingness: 0.2
 deep_genotype_missingness: 0.02
 shallow_sample_missingness: 0.2
@@ -39,14 +36,13 @@ results_data_table_name: pgs_datatable_prsice
 target_data_path: output/qced_genotype/corrected_hg38/data_test_0005
 target_data_prefix: EUR.FINAL # name without extension (bim,bed,fam)
 gwas_data_path: output/qced_gwas
-prsice_path:       # default is repository/main/tools/ldpred2
 clumping_reference_path: input/reference
 clumping_reference_prefix: eur_hg38.phase3 # name without extension (bim,bed,fam)
 clump_kb: 500
 clump_p: 1
 clump_r2: 0.2
 base_maf: 0.01
-p_values: "0.05,0.1,0.5,1"
+p_values: "0.00000005,0.0000001,0.000001,0.00001,0.0001,0.001,0.01,0.05,0.1,0.5,1"
 min_number_of_snps_included: 100
 min_number_of_snps_included_of_the_highest_p_value: 1000
 

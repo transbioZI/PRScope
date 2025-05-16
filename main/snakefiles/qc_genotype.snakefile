@@ -1,14 +1,5 @@
 import os
 
-plink = config["plink"]
-plink2 = config["plink2"]
-
-if plink is None:
-    plink = config["repository"] + "/tools/plink"
-
-if plink2 is None:
-    plink2 = config["repository"] + "/tools/plink2"
-
 rule all:
     input:
         config['output_path']+'/corrected_hg19/' + config['processed_data_directory_name'] + '/' + config['genotype_data_name'] + '.FINAL.snp_missingness.jpeg',
@@ -18,10 +9,11 @@ rule all:
 rule remove_snps_missingness:
     input:
         multiext(config['target_data']+'/{target_data_name}','.bim', ".bed", ".fam")
+    conda: "../environment.yaml"
     output:
         multiext(config['output_path']+'/tmp/{target_data_name}.snpsremoved', '.bim', ".bed", ".fam")
     shell:
-        "{plink} \
+        "plink \
         --bfile {config[target_data]}/{wildcards.target_data_name}\
             --geno {config[shallow_genotype_missingness]}  \
             --make-bed \
@@ -31,10 +23,11 @@ rule remove_snps_missingness:
 rule remove_samples_missingness:
     input:
         rules.remove_snps_missingness.output
+    conda: "../environment.yaml"
     output:
         multiext(config['output_path']+'/tmp/{target_data_name}.samplesremoved', '.bim', ".bed", ".fam")
     shell:
-        "{plink} \
+        "plink \
         --bfile {config[output_path]}/tmp/{wildcards.target_data_name}.snpsremoved\
             --mind {config[shallow_sample_missingness]} \
             --make-bed \
@@ -44,10 +37,11 @@ rule remove_samples_missingness:
 rule remove_snps_missingness_deeply:
     input:
         rules.remove_samples_missingness.output
+    conda: "../environment.yaml"
     output:
         multiext(config['output_path']+'/tmp/{target_data_name}.snpsremoved2', '.bim', ".bed", ".fam")
     shell:
-        "{plink} \
+        "plink \
         --bfile {config[output_path]}/tmp/{wildcards.target_data_name}.samplesremoved\
             --geno {config[deep_genotype_missingness]} \
             --make-bed \
@@ -57,10 +51,11 @@ rule remove_snps_missingness_deeply:
 rule remove_samples_missingness_deeply:
     input:
         rules.remove_snps_missingness_deeply.output
+    conda: "../environment.yaml"
     output:
         multiext(config['output_path']+'/tmp/{target_data_name}.samplesremoved2', '.bim', ".bed", ".fam")
     shell:
-        "{plink} \
+        "plink \
         --bfile {config[output_path]}/tmp/{wildcards.target_data_name}.snpsremoved2 \
             --mind {config[deep_sample_missingness]} \
             --make-bed \
@@ -70,10 +65,11 @@ rule remove_samples_missingness_deeply:
 rule remove_maf:
     input:
         rules.remove_samples_missingness_deeply.output
+    conda: "../environment.yaml"
     output:
         multiext(config['output_path']+'/tmp/{target_data_name}.mafremoved', '.bim', ".bed", ".fam")
     shell:
-        "{plink} \
+        "plink \
         --bfile {config[output_path]}/tmp/{wildcards.target_data_name}.samplesremoved2 \
             --maf {config[maf]} \
             --make-bed \
@@ -83,10 +79,11 @@ rule remove_maf:
 rule remove_hwe:
     input:
         rules.remove_maf.output
+    conda: "../environment.yaml"
     output:
         multiext(config['output_path']+'/corrected_hg19/' + config['processed_data_directory_name'] + '/{target_data_name}.QC',".fam",".bim",".bed")
     shell:
-        "{plink} \
+        "plink \
         --bfile {config[output_path]}/tmp/{wildcards.target_data_name}.mafremoved\
             --hwe {config[hwe]} \
             --make-bed \
@@ -96,10 +93,11 @@ rule remove_hwe:
 rule exclude_high_ld_region:
     input:
         rules.remove_hwe.output
+    conda: "../environment.yaml"
     output:
         multiext(config['output_path']+'/corrected_hg19/' + config['processed_data_directory_name'] + '/{target_data_name}.QC1', ".bim",".bed",".fam")
     shell:
-        "{plink} \
+        "plink \
             --bfile {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC \
             --make-bed \
             --allow-no-sex \
@@ -109,12 +107,13 @@ rule exclude_high_ld_region:
 rule remove_het:
     input:
         rules.exclude_high_ld_region.output
+    conda: "../environment.yaml"
     output:
         multiext(config['output_path']+'/corrected_hg19/' + config['processed_data_directory_name'] + '/{target_data_name}.QC2', ".bim",".bed",".fam"),
         config['output_path']+'/corrected_hg19/' + config['processed_data_directory_name'] + '/{target_data_name}.FINAL.fail_het_imiss.sample'
     shell:
-        """Rscript {config[repository]}/scripts/het.R {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]} {wildcards.target_data_name}.QC1 FINAL.fail_het_imiss.sample {plink} {config[heterozygosity]}
-        {plink} \
+        """Rscript {config[repository]}/scripts/het.R {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]} {wildcards.target_data_name}.QC1 FINAL.fail_het_imiss.sample $(which plink) {config[heterozygosity]}
+        plink \
             --bfile {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC1 \
             --remove-fam {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL.fail_het_imiss.sample \
             --allow-no-sex \
@@ -125,12 +124,13 @@ rule remove_het:
 rule exclude_related_samples:
     input:
         rules.remove_het.output
+    conda: "../environment.yaml"
     output:
         multiext(config['output_path']+'/corrected_hg19/' + config['processed_data_directory_name'] + '/{target_data_name}.QC3', ".bim",".bed",".fam"),
         config['output_path']+'/corrected_hg19/' + config['processed_data_directory_name'] + '/{target_data_name}.FINAL.related.samples'
     shell:
-        """Rscript {config[repository]}/scripts/relatedSamples.R {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]} {wildcards.target_data_name}.QC2 FINAL.related.samples {plink} hg19 {config[relatedness]}
-        {plink} \
+        """Rscript {config[repository]}/scripts/relatedSamples.R {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]} {wildcards.target_data_name}.QC2 FINAL.related.samples $(which plink) hg19 {config[relatedness]}
+        plink \
             --bfile {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC2 \
             --remove-fam {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL.related.samples\
             --make-bed \
@@ -141,16 +141,18 @@ rule exclude_related_samples:
 rule assessPopStratification:
     input:
         rules.exclude_related_samples.output
+    conda: "../environment.yaml"
     output:
         multiext(config['output_path']+'/corrected_hg19/' + config['processed_data_directory_name'] + '/{target_data_name}',".FINAL.bim",".FINAL.bed",".FINAL.fam")
     shell:
         """
-        Rscript {config[repository]}/scripts/convert_ids_and_calc_PCA.R {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC3 {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL {config[convert_rsid]} {plink} {plink2} {config[repository]}/resources/removeRegion.txt
+        Rscript {config[repository]}/scripts/convert_ids_and_calc_PCA.R {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC3 {config[output_path]}/corrected_hg19/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL {config[convert_rsid]} $(which plink) $(which plink2) {config[repository]}/resources/removeRegion.txt
         """
 
 rule plot:
     input:
         rules.assessPopStratification.output
+    conda: "../environment.yaml"
     output:
         multiext(config['output_path']+'/corrected_hg19/'+config['processed_data_directory_name']+'/{target_data_name}',".FINAL.sample_missingness.jpeg",".FINAL.snp_missingness.jpeg",".FINAL.frq.jpeg")
     shell:

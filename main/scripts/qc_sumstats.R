@@ -6,15 +6,6 @@ gc()
 # Import packages #
 ###################
 
-if(!require(gwasrapidd)){
-    install.packages("gwasrapidd")
-}
-if(!require(dplyr)){
-    install.packages("dplyr")
-}
-if(!require(tidyverse)){
-    install.packages("tidyverse")
-}
 library(tidyverse)
 library(data.table)
 library(optparse)

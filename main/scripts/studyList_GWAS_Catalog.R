@@ -1,18 +1,10 @@
 rm(list=ls())
 gc()
 
-library(MASS)
-library(igraph)
-library(dplyr)
-library(liver)
-library(stringr)
-library(data.table)
 suppressMessages(library(dplyr))
 suppressMessages(library(tidyverse))
 suppressMessages(library(gwasrapidd))
-suppressMessages(library(rtracklayer))
-suppressMessages(library(magrittr))
-suppressMessages(library(purrr))
+
 args = commandArgs(trailingOnly=TRUE)
 
 input = args[1]

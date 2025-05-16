@@ -1,21 +1,15 @@
-name: prscope
+name: pgscope
 channels:
-  - defaults
   - conda-forge
   - bioconda
-  - r
+  - dnachun
 dependencies:
-  - r-base=4.4.1
+  - r-base
   - r-essentials
-  - r-tidyverse
-  - r-dplyr
+  - r-gwasrapidd
+  - plink
+  - plink2
+  - r-plinkqc
+  - prsice
   - r-bigsnpr
-  - r-bigstatsr
-  - r-rngtools
-  - r-foreach
-  - r-stringr
-  - python=3.12.1
-  - snakemake
-  - r-ggplot2
-  - r-tibble
-  - r-tidyr
+  - r-argparser

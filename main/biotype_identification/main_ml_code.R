@@ -3,14 +3,6 @@ registerDoParallel(cl)
 
 previous_features_discovery = c()
 
-DISCOVERY_DATA = DiscoveryRES     # DELETE
-DISCOVERY_GROUP = DiscoveryGroup  # DELETE
-DISCOVERY_IDs = DiscoveryMeta[,2] # DELETE
-
-VALIDATION_DATA = ValidationRES     # DELETE
-VALIDATION_GROUP = ValidationGroup  # DELETE
-VALIDATION_IDs = ValidationMeta[,1]  # DELETE
-
 for(FEATURE_SIZE in features_sizes) {
   if (!file.exists(paste0(repository_path,"/",experiment_path,"/models"))){
     dir.create(file.path(paste0(repository_path,"/",experiment_path,"/models")))
