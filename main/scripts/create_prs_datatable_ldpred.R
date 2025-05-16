@@ -81,8 +81,8 @@ if(length(files_exist_2) != 0) {
       df <- merge(df,df2, by = c("FID","IID"))
     }
   }
-  write.table(df[,-1], paste0(prs_path,"/",results_table,".tsv"), row.names = F, col.names = T, quote = F)
+  write.table(df[,-1], paste0(prs_path,"/",results_table,".tsv"), row.names = F, col.names = T, quote = F, sep = "\t")
 } else {
-  write.table(data.frame(x="empty"), paste0(prs_path,"/",results_table,".tsv"), row.names = F, col.names = T, quote = F)
+  write.table(data.frame(x="empty"), paste0(prs_path,"/",results_table,".tsv"), row.names = F, col.names = T, quote = F, sep = "\t")
 }
 
