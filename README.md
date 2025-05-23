@@ -1,5 +1,15 @@
 # PRScope
 
+## Contents
+
+- [Outline](#Outline)
+  - [Inputs](#Inputs)
+  - [Output](#Output)
+- [System Requirements](#System-Requirements)
+  -[Hardware Requirements](#Hardware-Requirements)
+  -[Software Requirements](#Software-Requirements)
+-[Setup](#Setup) 
+
 ## Outline
 
 **PRScope** automatically generates all the polygenic scores (PGS) associated with selected ontology IDs (e.g., Experimental Factor Ontology, EFO) for a given genotype dataset.
