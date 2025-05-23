@@ -45,6 +45,8 @@ Only conda must be installed manually. All other dependencies are managed via th
 
 PRScope has been tested on the Ubuntu 22.04.5 and requires a Linux system.
 
+---
+
 ## Setup
 
 ### 1. Setting Up
@@ -64,6 +66,8 @@ Place them into this folder `input/reference/`:
    - `eur_hg38.phase3.bim`
    - `eur_hg38.phase3.fam`
    - `eur_hg38.phase3.frq`
+
+---
 
 ## Installation Instructions
 
@@ -85,6 +89,8 @@ conda create -c conda-forge -c bioconda -n snakemake snakemake python=3.12.1
 conda activate snakemake
 ```
 
+---
+
 ## Running PRScope (please see Demo below)
 
 ```bash
@@ -96,6 +102,8 @@ This command initiates the PRScope pipeline.
 
 - Wait for installation to complete conda environment
 - May take up to an hour
+
+---
 
 ## PRScope tested with
 
@@ -124,22 +132,24 @@ parallel, stats, graphics, grDevices, utils, datasets, methods, base
 other attached packages:     <br>
 reshape2_1.4.4, cluster_2.1.7, xgboost_1.7.8.1, bigutilsr_0.3.4, reshape_0.8.9, ggpubr_0.6.0,doParallel_1.0.17, iterators_1.0.14, foreach_1.5.2, glmnet_4.1-8, Matrix_1.7-1, lubridate_1.9.4, forcats_1.0.0, purrr_1.0.2, readr_2.1.5, tidyr_1.3.1, tibble_3.2.1, tidyverse_2.0.0, data.table_1.16.4, dplyr_1.1.4, gwasrapidd_0.99.17, caret_7.0-1, lattice_0.22-6, ranger_0.17.0, stringr_1.5.1, ggplot2_3.5.1, fmsb_0.7.6, optparse_1.7.5, tidyselect_1.2.1, timeDate_4041.110, bigassertr_0.1.6, pROC_1.18.5, digest_0.6.37, rpart_4.1.23,timechange_0.3.0, lifecycle_1.0.4, survival_3.7-0, magrittr_2.0.3, compiler_4.4.1, rlang_1.1.4, tools_4.4.1, utf8_1.2.4, ggsignif_0.6.4, plyr_1.8.9, abind_1.4-8, withr_3.0.2, nnet_7.3-19, grid_4.4.1, stats4_4.4.1, fansi_1.0.6, colorspace_2.1-1, future_1.34.0, globals_0.16.3, scales_1.3.0, MASS_7.3-61, cli_3.6.3, generics_0.1.3, RSpectra_0.16-2, rstudioapi_0.17.1, future.apply_1.11.3, tzdb_0.4.0, getopt_1.20.4, splines_4.4.1, vctrs_0.6.5, hardhat_1.4.0, jsonlite_1.8.9, carData_3.0-5, car_3.1-3, hms_1.1.3, rstatix_0.7.2, Formula_1.2-5, listenv_0.9.1, gower_1.0.1, recipes_1.1.0, glue_1.8.0,parallelly_1.40.1, codetools_0.2-20, stringi_1.8.4, gtable_0.3.6, shape_1.4.6.1, munsell_0.5.1, pillar_1.9.0, ipred_0.9-15, lava_1.8.0, R6_2.5.1, backports_1.5.0, broom_1.0.7, class_7.3-22, Rcpp_1.0.13-1, nlme_3.1-166, prodlim_2024.06.25, ModelMetrics_1.2.2.2, pkgconfig_2.0.3
 
-# Demo
+---
 
-#### a. Navigate to the repository path
+## Demo
+
+### a. Navigate to the repository path
 
 ```bash
 cd PRScope
 ```
 
-#### b. Folder Structure
+### b. Folder Structure
 
 - `config/` – For advanced parameter customization
 - `input/` – The only folder requiring user modifications
 - `main/` – Contains the main pipeline
 - `output/` – Will contain output after pipeline execution
 
-#### c. Preparing the Input
+### c. Preparing the Input
 
 1. Navigate to `input/`
 2. Edit `efo_ids.txt`:
