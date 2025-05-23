@@ -6,9 +6,9 @@
   - [Inputs](#Inputs)
   - [Output](#Output)
 - [System Requirements](#System-Requirements)
-  -[Hardware Requirements](#Hardware-Requirements)
-  -[Software Requirements](#Software-Requirements)
--[Setup](#Setup) 
+  - [Hardware Requirements](#Hardware-Requirements)
+  - [Software Requirements](#Software-Requirements)
+- [Setup](#Setup) 
 
 ## Outline
 
