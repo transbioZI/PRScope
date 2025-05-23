@@ -66,21 +66,30 @@ cd PRScope
    - `eur_hg38.phase3.frq`
 
 ---
+# System Requirements
+
+## Hardware Requirements
+
+PRScope requires only a standard computer with enough RAM (4GB) to support the in-memory operations, but for best performance, we suggest a computer with higher specifications: <br>
+RAM: 16+ GB
+CPU: 4+ cores, 3.3+ GHz/core
+
+The runtimes below are generated using a computer with the recommended specs (16 GB RAM, 4 cores@3.3 GHz) and internet of speed 100 Mbps.
 
 ## Software Requirements
 
 PRScope requires the following:
 
-- Conda
+- conda
 - Python
 - R
 - Snakemake
 - PLINK
 - PRSice
 
-Only Conda must be installed manually. All other dependencies are managed via the Conda environment.
+Only conda must be installed manually. All other dependencies are managed via the Conda environment.
 
----
+PRScope has been tested on the Ubuntu 22.04.5 and requires a Linux system.
 
 ## Installation Instructions
 
@@ -94,7 +103,7 @@ Only Conda must be installed manually. All other dependencies are managed via th
 conda create -c conda-forge -c bioconda -n snakemake snakemake python=3.12.1
 ```
 - Environment name: `snakemake`
-- Wait for installation to complete
+- Wait for installation to complete (~15 minutes)
 
 ### 3. Activate the Environment
 
@@ -113,8 +122,8 @@ cd PRScope
 
 This command initiates the PRScope pipeline.
 
+- Wait for installation to complete conda environment
 - May take up to an hour
-- Wait for installation to complete for conda environment
 
 ## The pipeline tested with :
 
