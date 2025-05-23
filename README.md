@@ -6,7 +6,7 @@
 - [System Requirements](#System-Requirements)
 - [Setup](#Setup)
 - [Installation Instructions](#Installation-Instructions)
-- [Running PRScope](#Running-PRScope)
+- [Running PRScope](#Running-PRScope-please-see-Demo-below)
 - [PRScope tested with](#PRScope-tested-with)
 - [Demo](#Demo)
 
