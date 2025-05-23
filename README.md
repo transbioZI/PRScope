@@ -84,9 +84,8 @@ conda create -c conda-forge -c bioconda -n snakemake snakemake python=3.12.1
 ```bash
 conda activate snakemake
 ```
----
 
-## Running PRScope (see Demo below)
+## Running PRScope (please see Demo below)
 
 ```bash
 cd PRScope
@@ -98,7 +97,7 @@ This command initiates the PRScope pipeline.
 - Wait for installation to complete conda environment
 - May take up to an hour
 
-## The pipeline tested with :
+## PRScope tested with
 
 conda version : 23.1.0     <br>
 snakemake version : 8.4.8       <br>
