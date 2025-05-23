@@ -3,12 +3,12 @@
 ## Contents
 
 - [Outline](#Outline)
-  - [Inputs](#Inputs)
-  - [Output](#Output)
 - [System Requirements](#System-Requirements)
-  - [Hardware Requirements](#Hardware-Requirements)
-  - [Software Requirements](#Software-Requirements)
-- [Setup](#Setup) 
+- [Setup](#Setup)
+- [Installation Instructions](#Installation-Instructions)
+- [Running PRScope](#Running-PRScope)
+- [PRScope tested with](#PRScope-tested-with)
+- [Demo](#Demo)
 
 ## Outline
 
