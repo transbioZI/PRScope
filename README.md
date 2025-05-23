@@ -26,16 +26,16 @@ The setup is optimized for a minimal-effort "vanilla use case" but supports adva
 #### a. Cloning the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/transbioZI/PRScope
 cd PRScope
 ```
 
 #### b. Folder Structure
 
-- `Config/` – For advanced parameter customization
-- `Input/` – The only folder requiring user modifications
-- `Main/` – Contains the main pipeline
-- `Output/` – Will contain output after pipeline execution
+- `config/` – For advanced parameter customization
+- `input/` – The only folder requiring user modifications
+- `main/` – Contains the main pipeline
+- `output/` – Will contain output after pipeline execution
 
 #### c. Preparing the Input
 
