@@ -1,97 +1,117 @@
-<!-- TABLE OF CONTENTS -->
-## Table of Contents
-<ol>
-  <li>
-    <a href="#getting-started">Getting Started</a>
-    <ul>
-      <li><a href="#installation--setup">Installation & Setup</a></li>
-    </ul>
-  </li>
-  <li>
-    <a href="#summary-statistics">Summary Statistics</a>
-    <ul>
-      <li><a href="#efo-ids">EFO IDs</a></li>
-      <li><a href="#configuration-file">Configuration File</a></li>
-    </ul>
-  </li>
-  <li><a href="#genetic-data">Genetic Data</a></li>
-  <li><a href="#polygenic-risk-scores">Polygenic Risk Scores</a></li>
-</ol>
+# PRScope
 
+## Outline
 
+**PRScope** automatically generates all the polygenic scores (PGS) associated with selected ontology IDs (e.g., Experimental Factor Ontology, EFO) for a given genotype dataset.
 
-<!-- GETTING STARTED -->
-## Getting Started
+### Inputs
 
-This is a step-by-step guide on how to work with the gwas_base_utils repository.
+- Ontology IDs defining the PGS of interest
+- Genotype data to calculate the PGS
 
-### Installation & Setup
+### Output
 
-1. Clone the repo:-
-   ```sh
-   git clone https://github.com/transbioZI/PGScope.git
-   ```
-2. Install snakemake:
-   ```sh
-   conda create -c conda-forge -c bioconda -n snakemake snakemake python=3.12.1
-   conda activate snakemake
-   ```
-3. Load R:
-   ```sh
-   module load R/4.2.3
-   ```
-4. Create Working directory e.g. `/Workspace/WorkDir`.
-5. Copy [config.yaml](./config.yaml) and [run.sh](./run.sh) files to the working directory to edit them only locally.
+- A dataset (multi-PGS matrix) containing:
+  - Subject IDs from the genotype data
+  - Values of all selected PGS
 
-<p align="right">(<a href="#table-of-contents">back to top</a>)</p>
+The setup is optimized for a minimal-effort "vanilla use case" but supports advanced configurations.
 
+---
 
+## Setup
 
-<!-- SUMMARY STATISTICS -->
-## Summary Statistics
+### 1. Setting Up
 
-The following is a detailed explanation of how to fetch the desired Summary Statistics from the [GWAS Catalog](https://www.ebi.ac.uk/gwas/), extract its data and run it through preprocessing and quality control.
+#### a. Cloning the Repository
 
+```bash
+git clone <repository-url>
+cd PRScope
+```
 
-### EFO IDs
-1. In your working directory create a blank `.txt` file
-2. Go to the [Experimental Factor Ontology](https://www.ebi.ac.uk/ols4/ontologies/efo?tab=classes) website and search in the tree for the desired experiment.
-3. You can either click on the desired experiment to copy its EFO ID, or you can simply hover on the experiment and write out the ID yourself to avoid restarting the tree search.
+#### b. Folder Structure
 
-   **_NOTE:_** If you want all the experiments that are subgroups of one experiment it is enough to get the EFO ID from the parent group (the algorithm will automatically fetch all the subgroups).
+- `Config/` – For advanced parameter customization
+- `Input/` – The only folder requiring user modifications
+- `Main/` – Contains the main pipeline
+- `Output/` – Will contain output after pipeline execution
 
-4. Copy all obtained EFO IDs to your .txt file.
+#### c. Preparing the Input
 
-**_NOTE:_** If you are only working with a few summary statistics you can download their `.txt` files yourself from the [GWAS Catalog](https://www.ebi.ac.uk/gwas/) to your working directory. You will need their paths in the following steps.
+1. Navigate to `input/`
+2. Edit `efo_ids.txt`:
+   - Default content: `EFO_0003898`
+   - Replace with your own EFO IDs as needed
 
-### Configuration File
-Open the `config.yaml` file that you have copied to your local working directory and edit the paths as follows:
-1. **_DO NOT MODIFY:_** `harmonised_list` is the URL that contains the harmonised list of all summary statistics.
-2. `repository_path` is the path to the git repository you cloned during <a href="#installation-and-setup">Setup</a>.
-3. `working_directory` is the path to the working directory you created during <a href="#installation-and-setup">Setup</a>.
-4. **_OPTIONAL:_** `efoIds` is the name of the `.txt` file you created in your working directory for your fetched <a href="#efo-ids">EFO IDs</a>.
-5. **_OPTIONAL:_**  `filter_study_output` is the name of a blank `.txt` file that you should create in your working directory so filtered summary statistics are stored in case you want the algorithm to fetch the summary statistics based on the EFO IDs.
-6. `transform_study_input` is the same file name as in `filter_study_output`, if it was indicated, or the name of a file you created yourself, that contains the filtered summary statistics.
-7. `transformed_path` is the path to an empty directory that you should create where the transformed summary statistics will be stored (e.g. `/Workspace/WorkDir/Transformed`). 
+3. In `input/genotype/`, you’ll find:
 
-<!-- Eventuell hier .gif hochladen, um zu zeigen, wie man die EFO IDs findet (auf mein Windows User Profile: Workspace/tutorials/EFO_IDs.gif) -->
+   - `EUR.bed`
+   - `EUR.bim`
+   - `EUR.fam`
 
-<p align="right">(<a href="#table-of-contents">back to top</a>)</p>
+   (Replace with your genotype data if desired)
 
+4. In `input/reference/`:
 
+   - Download the required files from the provided link
+   - Place them into this folder
 
+   The folder should now include:
 
-<!-- Genetic Data -->
-## Genetic Data
+   - `ldpred2_ref/`
+   - `eur_hg38.phase3.bed`
+   - `eur_hg38.phase3.bim`
+   - `eur_hg38.phase3.fam`
+   - `eur_hg38.phase3.frq`
 
-<p align="right">(<a href="#table-of-contents">back to top</a>)</p>
+---
 
+## Software Requirements
 
+PRScope requires the following:
 
+- Conda
+- Python
+- R
+- Snakemake
+- PLINK
+- PRSice
 
-<!-- Polygenic Risk Scores -->
-## Polygenic Risk Scores
+Only Conda must be installed manually. All other dependencies are managed via the Conda environment.
 
+---
 
-<p align="right">(<a href="#table-of-contents">back to top</a>)</p>
+## Installation Instructions
 
+### 1. Install Conda
+
+[Conda Installation Guide](https://docs.conda.io/projects/conda/en/latest/user-guide/install/index.html)
+
+### 2. Create the Conda Environment
+
+```bash
+cd PRScope
+conda env create -f main/environment.yaml
+```
+
+- Environment name: `prscope`
+- May take up to an hour
+- Wait for installation to complete
+
+### 3. Activate the Environment
+
+```bash
+conda activate prscope
+```
+
+---
+
+## Running PRScope
+
+```bash
+cd PRScope
+./run.sh
+```
+
+This command initiates the PRScope pipeline.
