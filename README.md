@@ -60,8 +60,8 @@ PRScope requires the following:
 - Python
 - R
 - Snakemake
-- PLINK
-- PRSice
+- PLINK<sup>[[1]](#fn1)</sup>
+- PRSice<sup>[[2]](#fn2)</sup> or LDpred-2<sup>[[3]](#fn3)</sup>
 
 Only conda must be installed manually. All other dependencies are managed via the Conda environment.
 
@@ -211,3 +211,16 @@ cd PRScope
 cd PRScope
 ./run.sh
 ```
+
+
+---
+
+## References
+
+<a name="fn1">[1]</a> HannahVMeyer. Meyer-Lab-cshl/plinkQC: plinkQC 0.3.2. (Zenodo, 2020). 976 doi:10.5281/ZENODO.3934294.
+
+<a name="fn2">[2]</a> Choi, S. W. & O’Reilly, P. F. PRSice-2: Polygenic Risk Score software for biobank-scale 906 data. GigaScience 8, (2019).
+
+<a name="fn3">[3]</a> Privé, F., Arbel, J. & Vilhjálmsson, B. J. LDpred2: better, faster, stronger. Bioinformatics 913 36, 5424–5431 (2021).
+
+
