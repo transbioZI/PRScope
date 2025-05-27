@@ -29,6 +29,16 @@ The setup is optimized for a minimal-effort "vanilla use case" but supports adva
 
 ---
 
+## Repo Contents
+
+- [config](https://github.com/transbioZI/PRScope/tree/main/config): config files for parameter specification. 
+- [input](https://github.com/transbioZI/PRScope/tree/main/input): genotype-, reference files and [PRS trait specification](#c-preparing-the-input).
+- [main](https://github.com/transbioZI/PRScope/tree/main/main): contains pipeline and scripts for PRS calculation, biotype identification and tools. 
+- [output](https://github.com/transbioZI/PRScope/tree/main/output): intermediate and final results are saved here.
+
+
+---
+
 ## System Requirements
 
 ### Hardware Requirements
