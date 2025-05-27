@@ -213,6 +213,12 @@ cd PRScope
 ./run.sh
 ```
 
+5. Expected Outcome
+
+- `output/gwas_list/gwas_search.txt` - GWAS list meeting the criteria for use in PGS calculation.
+- `output/qced_gwas/GCST*` - GWAS in `gwas_search.txt`, downloaded and preprocessed, ready for PGS calculation.
+- `output/qced_genotype/corrected[hg19,hg38]` - EUR.FINAL.* - preprocessed version of the simulated genotype data in `input/genotype/`.
+- `output/calculated_pgs_prsice/` all calculated PGS of GWAS in the list `gwas_search.txt` as data table `pgs_datatable_prsice_100.tsv`. The suffix `_100` means, the min number of SNPs used to calculate a PGS.
 
 ---
 
@@ -226,4 +232,6 @@ cd PRScope
 
 <a name="fn4">[4]</a> https://github.com/sritchie73/liftOverPlink
 
+# Citation
 
+For usage of the PRScope and associated manuscript, please cite according to the enclosed [citation.bib](./citation.bib).
