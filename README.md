@@ -62,6 +62,7 @@ PRScope requires the following:
 - Snakemake
 - PLINK<sup>[[1]](#fn1)</sup>
 - PRSice<sup>[[2]](#fn2)</sup> or LDpred-2<sup>[[3]](#fn3)</sup>
+- liftOverPlink<sup>[[4]](#fn4)</sup>
 
 Only conda must be installed manually. All other dependencies are managed via the Conda environment.
 
@@ -222,5 +223,7 @@ cd PRScope
 <a name="fn2">[2]</a> Choi, S. W. & O’Reilly, P. F. PRSice-2: Polygenic Risk Score software for biobank-scale 906 data. GigaScience 8, (2019).
 
 <a name="fn3">[3]</a> Privé, F., Arbel, J. & Vilhjálmsson, B. J. LDpred2: better, faster, stronger. Bioinformatics 913 36, 5424–5431 (2021).
+
+<a name="fn4">[4]</a> https://github.com/sritchie73/liftOverPlink
 
 
