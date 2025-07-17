@@ -5,8 +5,10 @@ def read_studies(path):
         return(file.read().splitlines())
 
 def studies_to_calculate():
-    studies_map = read_studies(config['studies_to_calculate'])
-    return set(studies_map)
+    csvFile = pandas.read_csv(config["studies_to_calculate"], sep='\t', engine='python')
+    csvFile.dropna(subset=['heritability_passed'], inplace=True)
+    csvFile = csvFile[csvFile['heritability_passed'] == True]
+    return csvFile['study_id']
 
 rule all:
     input:
@@ -14,7 +16,7 @@ rule all:
 
 rule calculate_PRS: 
     input:
-        sumstat = config['gwas_data_path'] + '/{study}.qced.h.tsv',
+        sumstat = config['gwas_data_path'] + '/{study}.qced.h.tsv.gz',
         bim_file = config['target_data_path'] + "/" + config['target_data_prefix'] + ".bim"
     conda: "../environment.yaml"
     output:
@@ -29,10 +31,10 @@ rule calculate_PRS:
         --snp VARID \
         --no-default \
         --chr CHR \
-        --bp POS \
-        --A1 Allele1 \
-        --A2 Allele2 \
-        --pvalue p_value \
+        --bp BP \
+        --A1 A1 \
+        --A2 2 \
+        --pvalue P \
         --bar-levels {config[p_values]} \
         --fastscore \
         --target {params.target} \
@@ -40,7 +42,7 @@ rule calculate_PRS:
         --clump-p {config[clump_p]} \
         --clump-r2 {config[clump_r2]} \
         --out {params.out} \
-        --base-maf BASEMAF:{config[base_maf]} \
+        --base-maf MAF:{config[base_maf]} \
         --thread 1 \
         --beta \
         --print-snp \

@@ -6,3 +6,5 @@ population: European
 number_of_snps: 250000
 publication_date: 2018-01-01
 harmonised_list: http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/harmonised_list.txt
+pubmed_ids_to_exclude: 34662886,34737426
+number_of_cases: 5000

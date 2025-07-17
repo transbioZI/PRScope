@@ -1,0 +1,8 @@
+study_list_for_heritability: output/gwas_list/her.txt
+gwas_data_path_heritability: output/qced_gwas
+hm3_path: input/reference/ldscore/eur_w_ld_chr/w_hm3.snplist
+ldsc_path: # default is repository/main/tools/ldsc
+chunksize: 100000
+ld_ref: input/reference/ldscore/eur_w_ld_chr_hg38
+output_path_heritability: output/heritability
+heritability_min_zscore: 4

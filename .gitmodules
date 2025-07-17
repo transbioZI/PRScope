@@ -1,0 +1,3 @@
+[submodule "main/tools/ldsc"]
+	path = main/tools/ldsc
+	url = https://github.com/bulik/ldsc

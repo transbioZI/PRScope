@@ -45,7 +45,7 @@ rule impute:
 rule calculate_LDSC:
     input:
         rds = config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.' + config['imputation_mode'] + '.nomiss.rds',
-        gwas = ancient(config['gwas_data_path_ldpred'] + '/{study}.qced.h.tsv')
+        gwas = ancient(config['gwas_data_path_ldpred'] + '/{study}.qced.h.tsv.gz')
     output:
         config['results_path_ldpred']+'/'+config['results_directory_name_ldpred'] + '/{study}' + '.her'
     conda: "../environment.yaml"
@@ -57,7 +57,7 @@ rule calculate_LDSC:
         Rscript {ldpred_path}/calculate_heritability_intercept.R \
             --ldpred-mode {config[mode]} \
             --col-stat BETA \
-            --col-stat-se standard_error \
+            --col-stat-se SE \
             --stat-type BETA \
             --sumstats {input.gwas} \
             --out {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/{wildcards.study}.{config[mode]} \
@@ -65,10 +65,10 @@ rule calculate_LDSC:
             --genomic-build hg38 \
             --name-score {wildcards.study} \
             --col-n N \
-            --col-pvalue p_value \
-            --col-bp POS \
-            --col-A1 Allele1 \
-            --col-A2 Allele2 \
+            --col-pvalue P \
+            --col-bp BP \
+            --col-A1 A1 \
+            --col-A2 A2 \
             --col-snp-id VARID \
             --col-chr CHR \
             --ld-meta-file {config[ldpred2_ref]}/map_hm3_plus.rds  \

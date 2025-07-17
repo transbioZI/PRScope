@@ -2,6 +2,7 @@ rm(list=ls())
 gc()
 library(stringr)
 library(dplyr)
+library(data.table)
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -10,7 +11,9 @@ threshold = as.numeric(args[2])
 up_threshold = as.numeric(args[3])
 study_list = args[4]
 name = args[5]
-files = unique(readLines(study_list))
+
+study_metadata = fread(study_list)
+files = study_metadata$study_id
 
 studies_to_remove = c()
 studies_empty = c()
@@ -62,25 +65,12 @@ if(length(files_exist) > 1) {
   }
 }
 
+prs_calculated = rep(TRUE,length(files))
+prs_calculated[match(studies_to_remove,files)] = FALSE
+prs_calculated[match(studies_empty,files)] = FALSE
+
+study_metadata$prs_calculated = prs_calculated
+
+write.table(apply(study_metadata,2,as.character),paste0(study_list,".prs_calculated"), quote = F,col.names = T, row.names = F, sep = "\t")
+
 write.table(df[,-1], paste0(prs_path,"/",name,"_",threshold,".tsv"), row.names = F, col.names = T, quote = F,sep="\t")
-
-PRS_data = read.table(paste0(prs_path,"/",name,"_",threshold,".tsv"), sep=" ", header=TRUE)
-print(dim(PRS_data))
-
-if(length(studies_to_remove) !=0) {
-  writeLines(studies_to_remove, paste0(prs_path,"/",name,"_studies_not_included.txt"))
-}
-
-if(length(studies_empty) !=0) {
-  writeLines(studies_empty, paste0(prs_path,"/",name,"_studies_empty.txt"))
-}
-
-writeLines(files_exist, paste0(prs_path,"/",name,"_studies_included.txt"))
-print("Number of studies included:")
-print(length(files_exist))
-print("Number of studies not included:")
-print(length(studies_to_remove))
-print("Number of studies empty:")
-print(length(studies_empty))
-print("Samples X PRSs:")
-print(dim(df[,-1]))

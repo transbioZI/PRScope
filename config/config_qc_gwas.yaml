@@ -2,3 +2,4 @@ study_list:
 output_path_qced_gwas:
 maf_file:
 harmonised_list:
+number_of_snps_after_qc:

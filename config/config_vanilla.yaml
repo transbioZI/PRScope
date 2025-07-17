@@ -9,9 +9,31 @@ publication_date: 2018-01-01
 harmonised_list: http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/harmonised_list.txt
 
 # GWAS QC module
-study_list: output/gwas_list/gwas_search.txt
+study_list: output/gwas_list/gwas_search.txt.tsv
 output_path_qced_gwas: output/qced_gwas
 maf_file: input/reference/eur_hg38.phase3.frq
+number_of_snps_after_qc: 250000
+pubmed_ids_to_exclude: 34662886
+number_of_cases: 5000
+
+# Heritability
+study_list_for_heritability: output/gwas_list/gwas_search.txt.tsv.qced
+gwas_data_path_heritability: output/qced_gwas
+hm3_path: input/reference/ldscore/eur_w_ld_chr/w_hm3.snplist
+ldsc_path: # default is repository/main/tools/ldsc
+chunksize: 100000
+ld_ref: input/reference/ldscore/eur_w_ld_chr_hg38
+heritability_min_zscore: 4
+output_path_heritability: output/heritability
+
+# Genetic Correlation
+study_list_for_genetic_correlation: output/gwas_list/gwas_search.txt.tsv.qced.heritability
+gwas_data_path_genetic_correlation: output/qced_gwas
+hm3_path: input/reference/ldscore/eur_w_ld_chr/w_hm3.snplist
+ldsc_path: # default is repository/main/tools/ldsc
+chunksize: 100000
+ld_ref: input/reference/ldscore/eur_w_ld_chr_hg38
+output_path_genetic_correlation: output/genetic_correlation
 
 # Genotpye QC module
 target_data: input/genotype
@@ -54,10 +76,10 @@ results_data_table_name_ldpred: pgs_datatable_ldpred
 mode : auto # or inf
 imputation_mode : random
 ldpred2_ref: /data/references/ldpred2_ref # clone : https://github.com/comorment/ldpred2_ref
-target_data_path_ldpred: output/qced_genotype/corrected_hg38/data_test_0005
-target_data_prefix_ldpred: EUR.FINAL # name without extension (bim,bed,fam)
-gwas_data_path_ldpred: output/qced_gwas
-ldpred_path:     # default is repository/main/tools/PRSice
+target_data_path_ldpred: /data/projects/on_going/CoviDrug/TRR/target/corrected_hg38/data_TRR_maf_0005/overlap
+target_data_prefix_ldpred: trr_overlap # name without extension (bim,bed,fam)
+gwas_data_path_ldpred: /data/sumstats/transformed
+ldpred_path:     # default is repository/main/tools/ldpred2
 intercept_max: 1.2
 intercept_min: 0.95
 heritability: 0.01
