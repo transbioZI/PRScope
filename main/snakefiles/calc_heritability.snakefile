@@ -12,12 +12,13 @@ def studies_to_calculate():
     csvFile["sample_size"] = csvFile['sample_size'].astype('int')
     csvFile = csvFile[csvFile['qc_passed'] == True]
     csvFile = csvFile[csvFile['sample_size'] > 0]
-    return csvFile["study_id"]
+    return csvFile["study_id"].tolist()
 
 def get_sample_size(st):
     csvFile = pandas.read_csv(config["study_list_for_heritability"], sep='\t', engine='python')
-    csvFile = csvFile[csvFile['study_id'] == str(st)]
-    return int(csvFile["sample_size"].iloc[0])
+    index_of_st = csvFile["study_id"].tolist().index(str(st))
+    sample_sizes = csvFile["sample_size"].tolist()
+    return int(sample_sizes[index_of_st])
 
 rule all:
     input:
@@ -33,8 +34,7 @@ rule munge_study:
         sample_size = get_sample_size
     shell:
         """
-        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {config[gwas_data_path_heritability]}/{wildcards.study}.qced.h.tsv.gz --N {params.sample_size} --out {config[gwas_data_path_heritability]}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE || true
-        touch {config[gwas_data_path_heritability]}/munged/{wildcards.study}.sumstats.gz
+        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {config[gwas_data_path_heritability]}/{wildcards.study}.qced.h.tsv.gz --N {params.sample_size} --out {config[gwas_data_path_heritability]}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE
         """
 
 rule calculate_heritability:
@@ -45,8 +45,7 @@ rule calculate_heritability:
         config['output_path_heritability'] + "/{study}.log"
     shell:
         """
-        python2 {ldsc_path}/ldsc.py --h2 {config[gwas_data_path_heritability]}/munged/{wildcards.study}.sumstats.gz --ref-ld-chr {config[ld_ref]}/ --w-ld-chr {config[ld_ref]}/ --out {config[output_path_heritability]}/{wildcards.study} || true
-        touch {config[output_path_heritability]}/{wildcards.study}.log
+        python2 {ldsc_path}/ldsc.py --h2 {config[gwas_data_path_heritability]}/munged/{wildcards.study}.sumstats.gz --ref-ld-chr {config[ld_ref]}/ --w-ld-chr {config[ld_ref]}/ --out {config[output_path_heritability]}/{wildcards.study}
         """
 
 rule filter_heritability:
@@ -59,5 +58,5 @@ rule filter_heritability:
         script = config['repository'] + "/scripts/filter_by_heritability.R"
     shell:
         """
-        Rscript {params.script} {config[output_path_heritability]} {config[study_list_for_heritability]} {config[heritability_min_zscore]} {config[output_path_heritability]}
+        Rscript {params.script} {config[output_path_heritability]} {config[study_list_for_heritability]} {config[heritability_min_zscore]} {config[output_path_heritability]} {config[gwas_data_path_heritability]}/munged
         """

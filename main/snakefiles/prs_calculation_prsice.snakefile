@@ -48,9 +48,7 @@ rule calculate_PRS:
         --print-snp \
         --no-regress \
         --ld {config[clumping_reference_path]}/{config[clumping_reference_prefix]} \
-        --stat BETA || true
-        touch {params.out}.all_score
-        touch {params.out}.prsice
+        --stat BETA
         """
 
 rule create_pgs_data_table:
@@ -63,3 +61,7 @@ rule create_pgs_data_table:
         """
         Rscript {config[repository]}/scripts/create_prs_datatable_prsice.R {config[results_path]}/{config[results_directory_name]} {config[min_number_of_snps_included]} {config[min_number_of_snps_included_of_the_highest_p_value]} {config[studies_to_calculate]} {config[results_data_table_name]}
         """
+
+# || true
+# touch {params.out}.all_score
+# touch {params.out}.prsice

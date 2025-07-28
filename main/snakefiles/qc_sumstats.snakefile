@@ -7,7 +7,7 @@ os.system("rm -f " +  config['output_path_qced_gwas'] + "/*_inprogress*")
 def studies_to_calculate():
     csvFile = pandas.read_csv(config["study_list"], sep='\t', engine='python')
     csvFile["sample_size"] = csvFile['sample_size'].astype('int')
-    return csvFile["study_id"]
+    return csvFile["study_id"].tolist()
 
 def read_harmonised_list():
     os.system("mkdir -p " + config['output_path_qced_gwas'])

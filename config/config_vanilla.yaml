@@ -29,11 +29,10 @@ output_path_heritability: output/heritability
 # Genetic Correlation
 study_list_for_genetic_correlation: output/gwas_list/gwas_search.txt.tsv.qced.heritability
 gwas_data_path_genetic_correlation: output/qced_gwas
-hm3_path: input/reference/ldscore/eur_w_ld_chr/w_hm3.snplist
 ldsc_path: # default is repository/main/tools/ldsc
-chunksize: 100000
 ld_ref: input/reference/ldscore/eur_w_ld_chr_hg38
 output_path_genetic_correlation: output/genetic_correlation
+rg_thr: 0.98
 
 # Genotpye QC module
 target_data: input/genotype

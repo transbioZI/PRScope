@@ -1,0 +1,6 @@
+# Genetic Correlation
+study_list_for_genetic_correlation: output/gwas_list/gwas_search.txt.tsv.qced.heritability
+gwas_data_path_genetic_correlation: output/qced_gwas
+ldsc_path: # default is repository/main/tools/ldsc
+ld_ref: input/reference/ldscore/eur_w_ld_chr_hg38
+output_path_genetic_correlation: output/genetic_correlation

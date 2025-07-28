@@ -72,6 +72,11 @@ base$MAF = NA
 #### Remove SNPs with no beta or OR - these cannot be used by PRSice ####
 base <- dplyr::filter(base, !(is.na(BETA) == TRUE & is.na(OR) == TRUE))
 
+problematic_beta = FALSE
+if(dim(base)[1] == 0 ) {
+    problematic_beta = TRUE
+}
+
 base <- subset(base, nchar(as.character(A1)) == 1)
 base <- subset(base, nchar(as.character(A2)) == 1)
 
@@ -96,10 +101,16 @@ base <- base %>% mutate(P = if_else(is.na(P), 1, as.numeric(P)))
 base <- distinct(base, SNP, .keep_all = TRUE)
 base <- distinct(base, VARID, .keep_all = TRUE)
 
-problematic_beta = FALSE
 if(dim(base)[1] != 0 ) {
   if(abs(median(base$BETA)) > 0.5 ) {
     problematic_beta = TRUE
+  }
+}
+
+problematic_p_value = FALSE
+if(dim(base)[1] != 0 ) {
+  if((sum(base$P > 1) > 0) | (sum(base$P < 0) > 0)) {
+    problematic_p_value = TRUE
   }
 }
 
@@ -112,6 +123,7 @@ if(dim(base)[1] != 0 ) {
   base[matches_na,]$MAF = 0.000000001
 }
 
+writeLines(as.character(problematic_p_value), paste0(output,"problematic_p_value"))
 writeLines(as.character(problematic_beta), paste0(output,".problematic_beta"))
 writeLines(as.character(hm_readed), paste0(output,".hm_readed"))
 writeLines(as.character(dim(base)[1]), paste0(output,".snpcount"))
