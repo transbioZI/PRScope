@@ -33,6 +33,8 @@ ldsc_path: # default is repository/main/tools/ldsc
 ld_ref: input/reference/ldscore/eur_w_ld_chr_hg38
 output_path_genetic_correlation: output/genetic_correlation
 rg_thr: 0.98
+chunksize_gen_cor: 100000
+hm3_path_gen_cor: input/reference/ldscore/eur_w_ld_chr/w_hm3.snplist
 
 # Genotpye QC module
 target_data: input/genotype
