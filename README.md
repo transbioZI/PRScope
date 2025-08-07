@@ -204,7 +204,7 @@ cd PRScope
    - `EUR.bim`
    - `EUR.fam`
 
-   (Replace with your genotype data if desired)
+   (Replace with your genotype data if desired. Keep EUR. as filenames)
 
 4. Running PRScope
 
