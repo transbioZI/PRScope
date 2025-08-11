@@ -22,7 +22,7 @@ rule find_efo_studies:
         config['output_path_gwas_search']+ "/"+ config['output_name_gwas_search'] + ".txt"
     shell:
         """
-        Rscript {config[repository]}/scripts/filter_studies_by_efo.R {input} {config[efo_ids]} {config[output_path_gwas_search]} {config[output_name_gwas_search]} {config[sample_size]} {config[number_of_snps]} {config[publication_date]} {config[population]} {config[pubmed_ids_to_exclude]} {config[number_of_cases]}
+        Rscript {config[repository]}/scripts/filter_studies_by_efo.R {input} {config[efo_ids]} {config[output_path_gwas_search]} {config[output_name_gwas_search]} {config[number_of_controls]} {config[number_of_snps]} {config[population]} {config[pubmed_ids_to_exclude]} {config[number_of_cases]}
         """
 
 rule create_studies_table:

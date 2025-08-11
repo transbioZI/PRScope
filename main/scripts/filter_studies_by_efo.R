@@ -13,17 +13,14 @@ collectChildEfos <- function(efoIds) {
 }
 
 args = commandArgs(trailingOnly=TRUE)
-
 harmonised_path <- args[1]
-
 efoIdsPath <- args[2]
 efoStudies <- paste0(args[3],"/",args[4])
-sample_size <- as.numeric(args[5])
+number_of_controls <- as.numeric(args[5])
 number_of_snps <- as.numeric(args[6])
-publication_date <- as.character(args[7])
-population <- as.character(args[8])
-pubmed_ids <- as.numeric(gsub(" ", "", unlist(strsplit(args[9],",")) , fixed = TRUE))
-number_of_cases <- as.numeric(args[10])
+population <- as.character(args[7])
+pubmed_ids <- as.numeric(gsub(" ", "", unlist(strsplit(args[8],",")) , fixed = TRUE))
+number_of_cases <- as.numeric(args[9])
 
 efo <- readLines(efoIdsPath)
 harmonised = readLines(harmonised_path)
@@ -43,8 +40,8 @@ less_control = c()
 less_cases_non_harm = c()
 less_control_non_harm = c()
 for (x in efo_study_ids) {
-    if(sum(efo_study_matching[x,]@ancestries$number_of_individuals, na.rm = T) >= sample_size) {
-      if(efo_study_matching[x,]@publications$publication_date >= publication_date) {
+    if(sum(efo_study_matching[x,]@ancestries$number_of_individuals, na.rm = T) >= number_of_cases + number_of_controls) {
+
         if((is.na(efo_study_matching[x,]@studies$snp_count) | efo_study_matching[x,]@studies$snp_count > number_of_snps) & !(as.numeric(efo_study_matching[x,]@publications$pubmed_id) %in% pubmed_ids)) {
           if(x %in% harm) {
             st = efo_study_matching[x,]
@@ -84,7 +81,7 @@ for (x in efo_study_ids) {
             }
 
             if(total_cases == 0 | total_cases > number_of_cases) {
-              if(total_controls == 0 | total_controls > total_cases) {
+              if(total_controls == 0 | total_controls > number_of_controls) {
                 res = c(x,res)
               } else {
                 less_control = c(x, less_control)
@@ -130,7 +127,7 @@ for (x in efo_study_ids) {
             }
 
             if(total_cases == 0 | total_cases > number_of_cases) {
-              if(total_controls == 0 | total_controls > total_cases) {
+              if(total_controls == 0 | total_controls > number_of_controls) {
                 no_harm = c(x,no_harm)
               } else {
                 less_control_non_harm = c(x, less_control_non_harm)
@@ -141,7 +138,6 @@ for (x in efo_study_ids) {
 
           }
         }
-      }
     }
 }
 

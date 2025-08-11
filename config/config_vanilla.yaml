@@ -2,19 +2,19 @@
 efo_ids: input/efo_ids.txt
 output_path_gwas_search: output/gwas_list
 output_name_gwas_search: gwas_search
-sample_size: 10000
 population: European
 number_of_snps: 250000
-publication_date: 2018-01-01
 harmonised_list: http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/harmonised_list.txt
+number_of_cases: 5000
+number_of_controls: 5000
+pubmed_ids_to_exclude: 34662886
 
 # GWAS QC module
 study_list: output/gwas_list/gwas_search.txt.tsv
 output_path_qced_gwas: output/qced_gwas
 maf_file: input/reference/eur_hg38.phase3.frq
 number_of_snps_after_qc: 250000
-pubmed_ids_to_exclude: 34662886
-number_of_cases: 5000
+
 
 # Heritability
 study_list_for_heritability: output/gwas_list/gwas_search.txt.tsv.qced
