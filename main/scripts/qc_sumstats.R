@@ -11,7 +11,7 @@ args = commandArgs(trailingOnly=TRUE)
 input <- args[1]
 output <- args[2]
 maf_file <- args[3]
-
+N = as.numeric(args[4])
 base <- fread(input, showProgress = FALSE, data.table = F)
 hm_readed = FALSE
 if("hm_beta" %in% colnames(base)) {
@@ -52,6 +52,24 @@ if("hm_beta" %in% colnames(base)) {
 colnames(base)[which(names(base) == "p_value")] <- "P"
 colnames(base)[which(names(base) == "standard_error")] <- "SE"
 
+if ("n" %in% colnames(base)) {
+  colnames(base)[which(colnames(base) == "n")] = "N"
+} else if("N" %in% colnames(base)) {
+  # do nothing
+} else {
+  base$N = N
+}
+base$N = suppressWarnings(as.numeric(base$N))
+tmp_l = dim(base)[1]
+base = dplyr::filter(base, !(is.na(N)))
+base = dplyr::filter(base, N>0)
+tmp_l2 = dim(base)[1]
+problematic_N = FALSE
+
+if(tmp_l2 == 0 & tmp_l > 0) {
+  problematic_N = TRUE
+}
+
 z_score_studies = FALSE
 if((sum(is.na(base$BETA)) == length(base$BETA)) & (sum(is.na(base$OR)) == length(base$OR))) {
   if(("z_score" %in% colnames(base))) {
@@ -64,7 +82,7 @@ if((sum(is.na(base$BETA)) == length(base$BETA)) & (sum(is.na(base$OR)) == length
   }
 }
 
-base = base %>% select(SNP,CHR,BP,A1,A2,BETA,OR,EAF,P,SE)
+base = base %>% select(SNP,CHR,BP,A1,A2,BETA,OR,EAF,P,SE,N)
 
 base$VARID <- str_c(base$CHR, ":", base$BP)
 base$MAF = NA
@@ -84,6 +102,7 @@ base <- dplyr::filter(base, !(A1 == "A" & A2 == "T"))
 base <- dplyr::filter(base, !(A1 == "T" & A2 == "A"))
 base <- dplyr::filter(base, !(A1 == "G" & A2 == "C"))
 base <- dplyr::filter(base, !(A1 == "C" & A2 == "G"))
+
 
 base$BETA <- suppressWarnings(as.numeric(base$BETA))
 base$OR <- suppressWarnings(as.numeric(base$OR))
@@ -123,9 +142,11 @@ if(dim(base)[1] != 0 ) {
   base[matches_na,]$MAF = 0.000000001
 }
 
-writeLines(as.character(problematic_p_value), paste0(output,"problematic_p_value"))
+writeLines(as.character(problematic_N), paste0(output,".problematic_N"))
+writeLines(as.character(problematic_p_value), paste0(output,".problematic_p_value"))
 writeLines(as.character(problematic_beta), paste0(output,".problematic_beta"))
 writeLines(as.character(hm_readed), paste0(output,".hm_readed"))
 writeLines(as.character(dim(base)[1]), paste0(output,".snpcount"))
 writeLines(as.character(z_score_studies), paste0(output,".z_score_converted"))
-fwrite(base[,c("VARID","SNP","CHR","BP","A1","A2","P","MAF","BETA","OR","SE","EAF")], file = output, quote = F, row.names = F, sep = " ", compress = "gzip")
+
+fwrite(base[,c("VARID","SNP","CHR","BP","A1","A2","P","MAF","BETA","OR","SE","EAF", "N")], file = output, quote = F, row.names = F, sep = " ", compress = "gzip")

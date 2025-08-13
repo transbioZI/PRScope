@@ -54,6 +54,8 @@ high_rg <- which(abs(dtf$rg) >= rg_max)
 
 df_high <- dtf[high_rg,]
 
+if(dim(df_high)[1]!=0) {
+
 # Filtering scheme
 iter <- 1000
 set.seed(123293)
@@ -115,6 +117,12 @@ res = unique(c(final_df$p1, final_df$p2))
 passed = rep(FALSE,nrow(df))
 passed[match(res,st_list)] = TRUE
 df$genetic_correlation_passed = passed
+
+} else {
+  df = st_df
+  df$genetic_correlation_passed = TRUE
+  df$correlated_with = ""
+}
 
 apply_which_false = function(condition, threshold, criteria) {
   return(sapply(condition,function(x) {

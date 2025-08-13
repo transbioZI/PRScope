@@ -9,6 +9,12 @@ def studies_to_calculate():
     csvFile["sample_size"] = csvFile['sample_size'].astype('int')
     return csvFile["study_id"].tolist()
 
+def get_sample_size(wildcards):
+    csvFile = pandas.read_csv(config["study_list"], sep='\t', engine='python')
+    index_of_st = csvFile["study_id"].tolist().index(str(wildcards))
+    sample_sizes = csvFile["sample_size"].tolist()
+    return int(sample_sizes[index_of_st])
+
 def read_harmonised_list():
     os.system("mkdir -p " + config['output_path_qced_gwas'])
     harm = config['output_path_qced_gwas']+"/harmonised_list.txt"
@@ -72,10 +78,11 @@ rule transform_study:
         config['output_path_qced_gwas'] + "/{study}.qced.h.tsv.gz"
     params:
         script = config['repository'] + "/scripts/qc_sumstats.R",
-        maf_file = config['maf_file']
+        maf_file = config['maf_file'],
+        N = get_sample_size
     shell:
         """
-        Rscript {params.script} {input} {output} {params.maf_file}
+        Rscript {params.script} {input} {output} {params.maf_file} {params.N}
         rm {input}
         """
 

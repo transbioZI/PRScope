@@ -46,7 +46,7 @@ rule munge_study:
         sample_size = get_sample_size
     shell:
         """
-        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {config[gwas_data_path_genetic_correlation]}/{wildcards.study}.qced.h.tsv.gz --N {params.sample_size} --out {config[gwas_data_path_genetic_correlation]}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE
+        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {config[gwas_data_path_genetic_correlation]}/{wildcards.study}.qced.h.tsv.gz --N-col N --out {config[gwas_data_path_genetic_correlation]}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE
         """
 
 rule calculate_genetic_correlation:
