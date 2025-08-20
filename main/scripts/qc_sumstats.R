@@ -135,6 +135,8 @@ if(dim(base)[1] != 0 ) {
   base[matches_na,]$MAF = 0.000000001
 }
 
+base <- dplyr::filter(base, MAF > 0.001)
+
 writeLines(as.character(problematic_N), paste0(output,".problematic_N"))
 writeLines(as.character(problematic_p_value), paste0(output,".problematic_p_value"))
 writeLines(as.character(problematic_beta), paste0(output,".problematic_beta"))
