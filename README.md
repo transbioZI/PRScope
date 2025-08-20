@@ -76,7 +76,7 @@ PRScope has been tested on the Ubuntu 22.04.5 and requires a Linux system.
 
 #### a. Cloning the Repository
 ```bash
-git clone https://github.com/transbioZI/PRScope
+git clone --recurse-submodules -b PRScope_v2.0 https://github.com/transbioZI/PRScope.git
 ```
 #### b. Download the required files from the provided link
 
