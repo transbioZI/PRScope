@@ -16,10 +16,6 @@ base <- fread(input, showProgress = FALSE, data.table = F)
 hm_readed = FALSE
 if("hm_beta" %in% colnames(base)) {
   
-  if(!("hm_effect_allele_frequency" %in% colnames(base))) {
-    base$hm_effect_allele_frequency = NA
-  }
-  
   colnames(base)[which(names(base) == "hm_rsid")] <- "SNP"
   colnames(base)[which(names(base) == "hm_chrom")] <- "CHR"
   colnames(base)[which(names(base) == "hm_pos")] <- "BP"
@@ -27,18 +23,16 @@ if("hm_beta" %in% colnames(base)) {
   colnames(base)[which(names(base) == "hm_effect_allele")] <- "A1"
   colnames(base)[which(names(base) == "hm_beta")] <- "BETA"
   colnames(base)[which(names(base) == "hm_odds_ratio")] <- "OR"
-  colnames(base)[which(names(base) == "hm_effect_allele_frequency")] <- "EAF"
   hm_readed = TRUE
 } else {
+
   if(!("beta" %in% colnames(base))) {
     base$beta = NA
   }
   if(!("odds_ratio" %in% colnames(base))) {
     base$odds_ratio = NA
   }
-  if(!("effect_allele_frequency" %in% colnames(base))) {
-    base$effect_allele_frequency = NA
-  }
+
   colnames(base)[which(names(base) == "rsid")] <- "SNP"
   colnames(base)[which(names(base) == "chromosome")] <- "CHR"
   colnames(base)[which(names(base) == "base_pair_location")] <- "BP"
@@ -46,7 +40,6 @@ if("hm_beta" %in% colnames(base)) {
   colnames(base)[which(names(base) == "effect_allele")] <- "A1"
   colnames(base)[which(names(base) == "beta")] <- "BETA"
   colnames(base)[which(names(base) == "odds_ratio")] <- "OR"
-  colnames(base)[which(names(base) == "effect_allele_frequency")] <- "EAF"
 }
 
 colnames(base)[which(names(base) == "p_value")] <- "P"
@@ -82,7 +75,7 @@ if((sum(is.na(base$BETA)) == length(base$BETA)) & (sum(is.na(base$OR)) == length
   }
 }
 
-base = base %>% select(SNP,CHR,BP,A1,A2,BETA,OR,EAF,P,SE,N)
+base = base %>% select(SNP,CHR,BP,A1,A2,BETA,OR,P,SE,N)
 
 base$VARID <- str_c(base$CHR, ":", base$BP)
 base$MAF = NA
@@ -149,4 +142,4 @@ writeLines(as.character(hm_readed), paste0(output,".hm_readed"))
 writeLines(as.character(dim(base)[1]), paste0(output,".snpcount"))
 writeLines(as.character(z_score_studies), paste0(output,".z_score_converted"))
 
-fwrite(base[,c("VARID","SNP","CHR","BP","A1","A2","P","MAF","BETA","OR","SE","EAF", "N")], file = output, quote = F, row.names = F, sep = " ", compress = "gzip")
+fwrite(base[,c("VARID","SNP","CHR","BP","A1","A2","P","MAF","BETA","OR","SE", "N")], file = output, quote = F, row.names = F, sep = "\t", compress = "gzip")
