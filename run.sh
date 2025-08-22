@@ -1,6 +1,7 @@
 #!/bin/bash
 # install snakemake : conda create -c conda-forge -c bioconda -n snakemake snakemake python=3.12.1
 #conda activate snakemake
+#module load R/4.4.1
 
 REPOSITORY_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 NUMBER_OF_THREADS=5
