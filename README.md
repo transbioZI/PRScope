@@ -81,9 +81,9 @@ git clone https://github.com/transbioZI/PRScope
 #### b. Download the required files from the provided link
 
 [Reference files for PRScope](https://zenodo.org/records/15524891)
-
+```bash
 tar -xf reference.tar.gz
-
+```
 Place them into this folder `input/reference/`:
 
 - The folder should now include:
