@@ -6,8 +6,8 @@ def read_studies(path):
 
 def studies_to_calculate():
     csvFile = pandas.read_csv(config["studies_to_calculate"], sep='\t', engine='python')
-    csvFile.dropna(subset=['heritability_passed'], inplace=True)
-    csvFile = csvFile[csvFile['heritability_passed'] == True]
+    csvFile.dropna(subset=['genetic_correlation_passed'], inplace=True)
+    csvFile = csvFile[csvFile['genetic_correlation_passed'] == True]
     return csvFile['study_id']
 
 rule all:
