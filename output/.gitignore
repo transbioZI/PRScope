@@ -3,4 +3,5 @@
 # Except this file
 !.gitignore
 
+# ...even if they are in subdirectories
 !*/
