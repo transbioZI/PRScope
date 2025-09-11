@@ -44,11 +44,11 @@ system(paste0(plink2, " --bfile ", paste0(input,".temp1"), " --make-bed --allow-
 system(paste0(plink2, " --bfile ", paste0(input,".temp1"), " --make-bed --out ", paste0(input,".temp2")))
 }
 
-system( paste0("rm ", input,".temp1*") )
+system( paste0("rm -rf ", input,".temp1*") )
 
 system(paste0(plink2, " --bfile ", paste0(input,".temp2"), " --make-bed --allow-no-sex --rm-dup exclude-all list --freq --het --missing --out ", output))
 
-system( paste0("rm ", input,".temp2*") )
+system( paste0("rm -rf ", input,".temp2*") )
 
 target_data = as_tibble(read.table(paste0(output,".bim")))
 total_snp = length(target_data$V2)
@@ -57,12 +57,12 @@ writeLines(selected_snps, paste0(input,".extract2"))
 
 system(paste0(plink, " --bfile ", output, " --make-bed --allow-no-sex --out ", paste0(input,".temp4")," --extract ",paste0(input,".extract2")," --keep ", paste0(input,".keep_samples")))
 system(paste0(plink, " --bfile ", paste0(input,".temp4")," --hwe 0.001 --geno 0.02 --make-founders  --make-bed --out ", paste0(input,".filtered2")))
-system( paste0("rm ", input,".temp4*") )
+system( paste0("rm -rf ", input,".temp4*") )
 system(paste0(plink, " --bfile ", paste0(input,".filtered2"), " --indep-pairwise 200 100 0.2 --maf 0.05 --out ", paste0(input,".filtered3")))
 system(paste0(plink, " --bfile ", paste0(input,".filtered2"), " --make-bed --extract ",paste0(input,".filtered3.prune.in"), " --out ", paste0(input,".filtered4")))
-system( paste0("rm ", input,".filtered2*") )
+system( paste0("rm -rf ", input,".filtered2*") )
 system(paste0(plink, " --bfile ", paste0(input,".filtered4"), " --indep-pairwise 200 100 0.2 --out ", paste0(input,".filtered5")))
-system( paste0("rm ", input,".filtered4*") )
+system( paste0("rm -rf ", input,".filtered4*") )
 
 prune_in = readLines(paste0(input,".filtered5.prune.in"))
 
@@ -73,15 +73,15 @@ if(length(prune_in) > 100000) {
 writeLines(prune_in,paste0(output,".POP_STRATIFICATION.SNPS"))
 system(paste0(plink, " --bfile ", output, " --extract ",paste0(input,".filtered5.prune.in"), " --pca --autosome --out ", paste0(output,".POP_STRATIFICATION")))
 
-system( paste0("rm ", input,".filtered5*") )
+system( paste0("rm -rf ", input,".filtered5*") )
 pop_stratification_plink = read.table(paste0(output,".POP_STRATIFICATION.eigenvec"))
 colnames(pop_stratification_plink) = c("FID","IID",paste0("PC",c(1:20)))
 jpeg(paste0(output,".POP_STRATIFICATION.jpeg"))
 pairs(pop_stratification_plink[,3:8])
 dev.off()
 
-system( paste0("rm ", input,".filtered*") )
-system( paste0("rm ", input,".temp*") )
-system( paste0("rm ", input,".keep_s*") )
-system( paste0("rm ", input,".extract*") )
-system( paste0("rm ", input,"*") )
+system( paste0("rm -rf ", input,".filtered*") )
+system( paste0("rm -rf ", input,".temp*") )
+system( paste0("rm -rf ", input,".keep_s*") )
+system( paste0("rm -rf ", input,".extract*") )
+system( paste0("rm -rf ", input,"*") )

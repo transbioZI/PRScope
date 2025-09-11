@@ -13,3 +13,4 @@ dependencies:
   - prsice
   - r-bigsnpr
   - r-argparser
+  - pandas

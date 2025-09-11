@@ -52,7 +52,7 @@ heterozygosity: 3 # Threshold for acceptable deviation from mean heterozygosity 
 relatedness: 0.1875 #Threshold for acceptable proportion of IBD between pair of individuals.
 
 # PGS calculation PRSice
-studies_to_calculate: output/gwas_list/gwas_search.txt.tsv.qced.heritability
+studies_to_calculate: output/gwas_list/gwas_search.txt.tsv.qced.heritability.genetic_correlation
 results_path: output
 results_directory_name: calculated_pgs_prsice
 results_data_table_name: pgs_datatable_prsice

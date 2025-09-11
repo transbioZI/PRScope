@@ -224,7 +224,7 @@ rule plot:
     shell:
         """
         Rscript {config[repository]}/scripts/plotMisFrq.R {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL
-        rm {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC*
+        rm -rf {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC*
         find {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/ -type f ! -name "*.FINAL.*" -exec rm -rf {{}} \\;
         rm -rf {config[output_path]}/tmp
         """

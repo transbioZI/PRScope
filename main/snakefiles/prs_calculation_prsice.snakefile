@@ -34,7 +34,7 @@ rule calculate_PRS:
         --chr CHR \
         --bp BP \
         --A1 A1 \
-        --A2 2 \
+        --A2 A2 \
         --pvalue P \
         --bar-levels {config[p_values]} \
         --fastscore \
