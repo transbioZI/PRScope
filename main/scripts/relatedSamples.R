@@ -10,7 +10,7 @@ fail <- args[3]
 plink <- args[4]
 genome_build <- args[5]
 ibd <- as.numeric(args[6])
-sub=strsplit(name,"\\.")[[1]][1]
+sub=sub(pattern = "(.*)\\..*$", replacement = "\\1", name)
 output <- paste0(indir,"/",sub,".",fail)
 
 res = check_relatedness(indir = indir,name,filter_high_ldregion=F,genomebuild=genome_build, imissTh = 1, path2plink = plink, run.check_relatedness = T, highIBDTh = ibd)

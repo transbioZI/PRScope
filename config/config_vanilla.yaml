@@ -50,6 +50,7 @@ maf: 0.005
 hwe: 1e-6
 heterozygosity: 3 # Threshold for acceptable deviation from mean heterozygosity per individual.
 relatedness: 0.1875 #Threshold for acceptable proportion of IBD between pair of individuals.
+genotype: hg38
 
 # PGS calculation PRSice
 studies_to_calculate: output/gwas_list/gwas_search.txt.tsv.qced.heritability.genetic_correlation

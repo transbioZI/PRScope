@@ -9,7 +9,7 @@ name <- args[2]
 fail <- args[3]
 plink <- args[4]
 het <- as.numeric(args[5])
-sub=strsplit(name,"\\.")[[1]][1]
+sub=sub(pattern = "(.*)\\..*$", replacement = "\\1", name)
 output <- paste0(indir,"/",sub,".",fail)
 
 res = check_het_and_miss(indir = indir,name, imissTh = 1, hetTh=het, path2plink = plink, run.check_het_and_miss = T)

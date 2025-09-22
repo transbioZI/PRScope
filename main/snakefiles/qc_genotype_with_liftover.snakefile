@@ -2,9 +2,9 @@ import os
 
 rule all:
     input:
-        config['output_path']+'/corrected_hg38/' + config['processed_data_directory_name'] + '/' + config['genotype_data_name'] + '.FINAL.snp_missingness.jpeg',
-        config['output_path']+'/corrected_hg38/' + config['processed_data_directory_name'] + '/' + config['genotype_data_name'] + '.FINAL.sample_missingness.jpeg',
-        config['output_path']+'/corrected_hg38/' + config['processed_data_directory_name'] + '/' + config['genotype_data_name'] + '.FINAL.frq.jpeg'
+        config['output_path']+'/corrected_' + config['genotype'] + '/' + config['processed_data_directory_name'] + '/' + config['genotype_data_name'] + '.FINAL.snp_missingness.jpeg',
+        config['output_path']+'/corrected_' + config['genotype'] + '/' + config['processed_data_directory_name'] + '/' + config['genotype_data_name'] + '.FINAL.sample_missingness.jpeg',
+        config['output_path']+'/corrected_' + config['genotype'] + '/' + config['processed_data_directory_name'] + '/' + config['genotype_data_name'] + '.FINAL.frq.jpeg'
 
 rule sort_plink:
     input:
@@ -142,7 +142,7 @@ rule remove_hwe:
     input:
         rules.remove_maf.output
     output:
-        multiext(config['output_path']+'/corrected_hg38/' + config['processed_data_directory_name'] + '/{target_data_name}.QC', ".snplist",".fam")
+        multiext(config['output_path']+'/corrected_' + config['genotype'] + '/' + config['processed_data_directory_name'] + '/{target_data_name}.QC', ".snplist",".fam")
     conda: "../environment.yaml"
     shell:
         "plink \
@@ -153,54 +153,54 @@ rule remove_hwe:
             --write-snplist \
             --make-bed \
             --allow-no-sex \
-            --out {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC"
+            --out {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC"
 
 rule exclude_high_ld_region:
     input:
         rules.remove_hwe.output
     output:
-        multiext(config['output_path']+'/corrected_hg38/' + config['processed_data_directory_name'] + '/{target_data_name}.QC1', ".bim",".bed",".fam")
+        multiext(config['output_path']+'/corrected_' + config['genotype'] + '/' + config['processed_data_directory_name'] + '/{target_data_name}.QC1', ".bim",".bed",".fam")
     conda: "../environment.yaml"
     shell:
         "plink \
-            --bfile {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC \
+            --bfile {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC \
             --make-bed \
             --allow-no-sex \
             --exclude {config[repository]}/resources/removeRegion.txt \
-            --out {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC1"
+            --out {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC1"
 
 rule remove_het:
     input:
         rules.exclude_high_ld_region.output
     output:
-        multiext(config['output_path']+'/corrected_hg38/' + config['processed_data_directory_name'] + '/{target_data_name}.QC2', ".bim",".bed",".fam"),
-        config['output_path']+'/corrected_hg38/' + config['processed_data_directory_name'] + '/{target_data_name}.FINAL.fail_het_imiss.sample'
+        multiext(config['output_path']+'/corrected_' + config['genotype'] + '/' + config['processed_data_directory_name'] + '/{target_data_name}.QC2', ".bim",".bed",".fam"),
+        config['output_path']+'/corrected_' + config['genotype'] + '/' + config['processed_data_directory_name'] + '/{target_data_name}.FINAL.fail_het_imiss.sample'
     conda: "../environment.yaml"
     shell:
-        """Rscript {config[repository]}/scripts/het.R {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]} {wildcards.target_data_name}.QC1 FINAL.fail_het_imiss.sample $(which plink) {config[heterozygosity]}
+        """Rscript {config[repository]}/scripts/het.R {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]} {wildcards.target_data_name}.QC1 FINAL.fail_het_imiss.sample $(which plink) {config[heterozygosity]}
         plink \
-            --bfile {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC1 \
-            --remove-fam {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL.fail_het_imiss.sample \
+            --bfile {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC1 \
+            --remove-fam {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL.fail_het_imiss.sample \
             --allow-no-sex \
             --make-bed \
-            --out {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC2
+            --out {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC2
         """
 
 rule exclude_related_samples:
     input:
         rules.remove_het.output
     output:
-        multiext(config['output_path']+'/corrected_hg38/' + config['processed_data_directory_name'] + '/{target_data_name}.QC3', ".bim",".bed",".fam"),
-        config['output_path']+'/corrected_hg38/' + config['processed_data_directory_name'] + '/{target_data_name}.FINAL.related.samples'
+        multiext(config['output_path']+'/corrected_' + config['genotype'] + '/' + config['processed_data_directory_name'] + '/{target_data_name}.QC3', ".bim",".bed",".fam"),
+        config['output_path']+'/corrected_' + config['genotype'] + '/' + config['processed_data_directory_name'] + '/{target_data_name}.FINAL.related.samples'
     conda: "../environment.yaml"
     shell:
-        """Rscript {config[repository]}/scripts/relatedSamples.R {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]} {wildcards.target_data_name}.QC2 FINAL.related.samples $(which plink) hg38 {config[relatedness]}
+        """Rscript {config[repository]}/scripts/relatedSamples.R {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]} {wildcards.target_data_name}.QC2 FINAL.related.samples $(which plink) {config[genotype]} {config[relatedness]}
         plink \
-            --bfile {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC2 \
-            --remove-fam {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL.related.samples\
+            --bfile {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC2 \
+            --remove-fam {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL.related.samples\
             --make-bed \
             --allow-no-sex \
-            --out {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC3
+            --out {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC3
 
         """
 
@@ -208,23 +208,23 @@ rule assessPopStratification:
     input:
         rules.exclude_related_samples.output
     output:
-        multiext(config['output_path']+'/corrected_hg38/' + config['processed_data_directory_name'] + '/{target_data_name}',".FINAL.bim",".FINAL.bed",".FINAL.fam")
+        multiext(config['output_path']+'/corrected_' + config['genotype'] + '/' + config['processed_data_directory_name'] + '/{target_data_name}',".FINAL.bim",".FINAL.bed",".FINAL.fam")
     conda: "../environment.yaml"
     shell:
         """
-        Rscript {config[repository]}/scripts/convert_ids_and_calc_PCA.R {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC3 {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL {config[convert_rsid]} $(which plink) $(which plink2) {config[repository]}/resources/removeRegion.txt
+        Rscript {config[repository]}/scripts/convert_ids_and_calc_PCA.R {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC3 {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL {config[convert_rsid]} $(which plink) $(which plink2) {config[repository]}/resources/removeRegion.txt
         """
 
 rule plot:
     input:
         rules.assessPopStratification.output
     output:
-        multiext(config['output_path']+'/corrected_hg38/'+config['processed_data_directory_name']+'/{target_data_name}',".FINAL.sample_missingness.jpeg",".FINAL.snp_missingness.jpeg",".FINAL.frq.jpeg")
+        multiext(config['output_path']+'/corrected_' + config['genotype'] + '/'+config['processed_data_directory_name']+'/{target_data_name}',".FINAL.sample_missingness.jpeg",".FINAL.snp_missingness.jpeg",".FINAL.frq.jpeg")
     conda: "../environment.yaml"
     shell:
         """
-        Rscript {config[repository]}/scripts/plotMisFrq.R {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL
-        rm -rf {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC*
-        find {config[output_path]}/corrected_hg38/{config[processed_data_directory_name]}/ -type f ! -name "*.FINAL.*" -exec rm -rf {{}} \\;
+        Rscript {config[repository]}/scripts/plotMisFrq.R {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL
+        rm -rf {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC*
+        find {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/ -type f ! -name "*.FINAL.*" -exec rm -rf {{}} \\;
         rm -rf {config[output_path]}/tmp
         """
