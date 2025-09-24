@@ -126,6 +126,8 @@ if(dim(base)[1] != 0 ) {
   }
 }
 
+base$MAF = as.numeric(base$MAF)
+
 if(dim(base)[1] != 0 ) {
   maf = as.data.frame(fread(maf_file, select = c("SNP","MAF"), showProgress = FALSE))
   matches = match(base$VARID,maf$SNP)
