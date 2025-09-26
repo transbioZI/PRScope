@@ -67,12 +67,10 @@ if(tmp_l2 == 0 & tmp_l > 0) {
 z_score_studies = FALSE
 if((sum(is.na(base$BETA)) == length(base$BETA)) & (sum(is.na(base$OR)) == length(base$OR))) {
   if(("z_score" %in% colnames(base))) {
-    if((sum(is.na(base$SE)) != length(base$SE)) & (sum(is.na(base$z_score)) != length(base$z_score))) {
-      base = base[!is.na(base$SE),]
-      base = base[!is.na(base$z_score),]
-      base$BETA = base$SE*base$z_score
-      z_score_studies = TRUE
-    }
+    base = dplyr::filter(base, !(is.na(SE)))
+    base = dplyr::filter(base, !(is.na(z_score)))
+    base$BETA = base$SE*base$z_score
+    z_score_studies = TRUE
   }
 }
 

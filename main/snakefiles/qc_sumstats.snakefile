@@ -38,6 +38,12 @@ def get_link(wildcards):
     studies = studies_harmonised()
     return "http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/"+ studies[wildcards.study][2:]
 
+def get_link_md5sum(wildcards):
+    studies = studies_harmonised()
+    link1 = "http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/"+ studies[wildcards.study][2:]
+    md5sum = os.path.dirname(link1) + "/md5sum.txt"
+    return md5sum
+
 def get_keys():
     return list(studies_harmonised().keys())
 
@@ -51,9 +57,14 @@ rule download_study:
     params:
         link = get_link,
         output_inprogress = config['output_path_qced_gwas'] + "/{study}_inprogress.h.tsv.gz",
+        md5sum = get_link_md5sum,
+        md5sum_download = config['output_path_qced_gwas'] + "/{study}_md5sum_download.txt",
+        md5sum_real = config['output_path_qced_gwas'] + "/{study}_md5sum_real.txt"
     shell:
         """
         wget {params.link} -O {params.output_inprogress}
+        wget --spider --force-html -i {params.md5sum} && wget {params.md5sum} -O {params.md5sum_real}
+        md5sum {params.output_inprogress} > {params.md5sum_download}
         """
 
 rule gzip_study:
