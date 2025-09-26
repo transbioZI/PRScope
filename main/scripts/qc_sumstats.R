@@ -13,6 +13,7 @@ output <- args[2]
 maf_file <- args[3]
 N = as.numeric(args[4])
 base <- fread(input, showProgress = FALSE, data.table = F)
+writeLines(as.character(dim(base)[1]), paste0(output,".snpcount_before"))
 hm_readed = FALSE
 if("hm_beta" %in% colnames(base)) {
   
