@@ -24,8 +24,8 @@
 ### Output
 
   - A dataset (multi-PGS matrix) containing:
-  - Subject IDs from the genotype data
-  - Values of all selected PGS
+    - Subject IDs from the genotype data
+    - Values of all selected PGS
 
 The setup is optimized for a minimal-effort "vanilla use case" but supports advanced configurations.
 
