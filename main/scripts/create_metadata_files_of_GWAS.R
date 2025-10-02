@@ -19,6 +19,7 @@ studies_list <- args[2]
 number_of_snps <- as.numeric(args[3])
 complete_results = fread(studies_list)
 studies = complete_results$study_id
+complete_results$path = path_to_sumstats
 
 if(length(studies) != 0) {
   number_of_lines = c()

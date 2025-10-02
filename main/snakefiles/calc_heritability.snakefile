@@ -20,21 +20,25 @@ def get_sample_size(st):
     sample_sizes = csvFile["sample_size"].tolist()
     return int(sample_sizes[index_of_st])
 
+def get_path(st):
+    csvFile = pandas.read_csv(config["study_list_for_heritability"], sep='\t', engine='python')
+    index_of_st = csvFile["study_id"].tolist().index(str(st))
+    sample_sizes = csvFile["path"].tolist()
+    return str(sample_sizes[index_of_st])
+    
 rule all:
     input:
         config['study_list_for_heritability'] + ".heritability"
 
 rule munge_study:
-    input:
-        config['gwas_data_path_heritability'] + "/{study}.qced.h.tsv.gz"
     conda: "../environment_for_ldsc.yaml"
     output:
         config['gwas_data_path_heritability'] + "/munged/{study}.sumstats.gz"
     params:
-        sample_size = get_sample_size
+        study_path = get_path
     shell:
         """
-        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {config[gwas_data_path_heritability]}/{wildcards.study}.qced.h.tsv.gz --N-col N --out {config[gwas_data_path_heritability]}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE,SE
+        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {params.study_path}/{wildcards.study}.qced.h.tsv.gz --N-col N --out {config[gwas_data_path_heritability]}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE,SE
         """
 
 rule calculate_heritability:

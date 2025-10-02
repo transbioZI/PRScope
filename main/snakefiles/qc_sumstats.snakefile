@@ -57,14 +57,23 @@ rule download_study:
     params:
         link = get_link,
         output_inprogress = config['output_path_qced_gwas'] + "/{study}_inprogress.h.tsv.gz",
+        md5sum_download = config['output_path_qced_gwas'] + "/{study}_md5sum_download.txt"
+    shell:
+        """
+        wget {params.link} -O {params.output_inprogress} --retry-connrefused --tries=10
+        md5sum {params.output_inprogress} > {params.md5sum_download}
+        """
+
+rule download_md5sum:
+    output:
+        config['output_path_qced_gwas'] + "/{study}_md5sum_real.txt"
+    params:
         md5sum = get_link_md5sum,
-        md5sum_download = config['output_path_qced_gwas'] + "/{study}_md5sum_download.txt",
         md5sum_real = config['output_path_qced_gwas'] + "/{study}_md5sum_real.txt"
     shell:
         """
-        wget {params.link} -O {params.output_inprogress}
-        wget --spider --force-html -i {params.md5sum} && wget {params.md5sum} -O {params.md5sum_real}
-        md5sum {params.output_inprogress} > {params.md5sum_download}
+        wget --spider --force-html -i {params.md5sum} && wget {params.md5sum} -O {params.md5sum_real} --retry-connrefused --tries=10
+        touch {params.md5sum_real}
         """
 
 rule gzip_study:
@@ -81,7 +90,7 @@ rule gzip_study:
         gzip -d {params.output_done}
         """
 
-rule transform_study:
+rule qc_gwas:
     input:
         rules.gzip_study.output
     conda: "../environment.yaml"
@@ -99,7 +108,8 @@ rule transform_study:
 
 rule create_studies_metadata:
     input:
-        expand(config['output_path_qced_gwas'] + "/{study}.qced.h.tsv.gz", study = get_keys())
+        expand(config['output_path_qced_gwas'] + "/{study}.qced.h.tsv.gz", study = get_keys()),
+        expand(config['output_path_qced_gwas'] + "/{study}_md5sum_real.txt", study = get_keys())
     conda: "../environment.yaml"
     output:
         config['study_list']+".qced"

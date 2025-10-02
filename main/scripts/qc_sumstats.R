@@ -12,8 +12,21 @@ input <- args[1]
 output <- args[2]
 maf_file <- args[3]
 N = as.numeric(args[4])
+print(input)
 base <- fread(input, showProgress = FALSE, data.table = F)
+
+if(any(table(colnames(base)) > 1)) {
+  base[,names(table(colnames(base))[table(colnames(base)) > 1])] = NULL # drop duplicate columns
+}
+
 writeLines(as.character(dim(base)[1]), paste0(output,".snpcount_before"))
+
+drop_columns = c("SNP","CHR","BP","A1","A2","BETA","OR","P","SE","MAF","VARID")
+df_colnames = colnames(base)
+if(any(is.element(df_colnames, drop_columns))) {
+  base[,which(is.element(df_colnames, drop_columns) == TRUE)] = NULL
+} 
+
 hm_readed = FALSE
 if("hm_beta" %in% colnames(base)) {
   
@@ -46,6 +59,28 @@ if("hm_beta" %in% colnames(base)) {
 colnames(base)[which(names(base) == "p_value")] <- "P"
 colnames(base)[which(names(base) == "standard_error")] <- "SE"
 
+base$MAF = 0
+base$VARID <- str_c(base$CHR, ":", base$BP)
+
+if(dim(base)[1] != 0 ) {
+  maf = as.data.frame(fread(maf_file, select = c("SNP","MAF"), showProgress = FALSE))
+  matches = match(base$SNP,maf$SNP)
+  matches_na = which(is.na(matches))
+  matches_not_na = which(!is.na(matches))
+  if(length(matches_not_na) > 0) {
+  	base[matches_not_na,]$MAF = maf$MAF[matches[!is.na(matches)]]
+  }
+}
+
+tmp_l = dim(base)[1]
+base <- dplyr::filter(base, MAF > 0.001)
+tmp_l2 = dim(base)[1]
+
+problematic_MAF_match = FALSE
+if(tmp_l2 == 0 & tmp_l > 0) {
+  problematic_MAF_match = TRUE
+}
+
 if ("n" %in% colnames(base)) {
   colnames(base)[which(colnames(base) == "n")] = "N"
 } else if("N" %in% colnames(base)) {
@@ -74,10 +109,7 @@ if((sum(is.na(base$BETA)) == length(base$BETA)) & (sum(is.na(base$OR)) == length
   }
 }
 
-base = base %>% select(SNP,CHR,BP,A1,A2,BETA,OR,P,SE,N)
-
-base$VARID <- str_c(base$CHR, ":", base$BP)
-base$MAF = NA
+base = base %>% select(SNP,CHR,BP,A1,A2,BETA,OR,P,SE,N,MAF,VARID)
 
 #### Remove SNPs with no beta or OR - these cannot be used by PRSice ####
 base <- dplyr::filter(base, !(is.na(BETA) == TRUE & is.na(OR) == TRUE))
@@ -125,22 +157,10 @@ if(dim(base)[1] != 0 ) {
   }
 }
 
-base$MAF = as.numeric(base$MAF)
-
-if(dim(base)[1] != 0 ) {
-  maf = as.data.frame(fread(maf_file, select = c("SNP","MAF"), showProgress = FALSE))
-  matches = match(base$VARID,maf$SNP)
-  matches_na = which(is.na(matches))
-  matches_not_na = which(!is.na(matches))
-  base[matches_not_na,]$MAF = maf$MAF[matches[!is.na(matches)]]
-  base[matches_na,]$MAF = 0.000000001
-}
-
-base <- dplyr::filter(base, MAF > 0.001)
-
 writeLines(as.character(problematic_N), paste0(output,".problematic_N"))
 writeLines(as.character(problematic_p_value), paste0(output,".problematic_p_value"))
 writeLines(as.character(problematic_beta), paste0(output,".problematic_beta"))
+writeLines(as.character(problematic_MAF_match), paste0(output,".problematic_MAF_match"))
 writeLines(as.character(hm_readed), paste0(output,".hm_readed"))
 writeLines(as.character(dim(base)[1]), paste0(output,".snpcount"))
 writeLines(as.character(z_score_studies), paste0(output,".z_score_converted"))
