@@ -70,14 +70,13 @@ if(length(studies) != 0) {
   qc_p[which((number_of_lines > number_of_snps) & (z_score_transformed == FALSE) & (problem_p_value == FALSE) & (problem_beta == FALSE) & !(is.na(complete_results$sample_size)) & (complete_results$sample_size > 0))] = TRUE
 
   a = apply_which_false(number_of_lines > number_of_snps, number_of_snps, "number_of_snps")
-  b = apply_which_false(z_score_transformed == FALSE, "TRUE", "z_score_transformed")
   c = apply_which_false(problem_p_value == FALSE, "TRUE", "problem_p_value")
   d = apply_which_false(problem_beta == FALSE, "TRUE", "problem_beta")
   e = apply_which_false(!(is.na(complete_results$sample_size)), "NA", "sample_size")
   f = apply_which_false(complete_results$sample_size > 0, 0, "sample_size")
   g = apply_which_false(problematic_N == FALSE, "TRUE", "problematic_N")
   
-  all_criteria = data.frame(a= a,b =b, c = c, d=d,e=e,f=f, g = g)
+  all_criteria = data.frame(a= a, c = c, d=d,e=e,f=f, g = g)
 
   comment_qc = unlist(apply(all_criteria, 1, function(x) {
       str = as.character(x[ x!=""])

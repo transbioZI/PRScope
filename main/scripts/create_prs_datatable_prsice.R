@@ -13,6 +13,7 @@ study_list = args[4]
 name = args[5]
 
 study_metadata = fread(study_list)
+study_metadata = study_metadata[study_metadata$genetic_correlation_passed == TRUE,]
 files = study_metadata$study_id
 
 studies_to_remove = c()

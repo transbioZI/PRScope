@@ -11,24 +11,30 @@ def studies_to_calculate():
     csvFile = csvFile[csvFile['genetic_correlation_passed'] == True]
     return csvFile['study_id']
 
+def get_path(st):
+    csvFile = pd.read_csv(config["studies_to_calculate"], sep='\t', engine='python')
+    index_of_st = csvFile["study_id"].tolist().index(str(st))
+    sample_sizes = csvFile["path"].tolist()
+    return str(sample_sizes[index_of_st])
+
 rule all:
     input:
         config['results_path']+'/'+config['results_directory_name']+'/'+config['results_data_table_name'] + '_' + str(config['min_number_of_snps_included']) + '.tsv'
 
 rule calculate_PRS: 
     input:
-        sumstat = config['gwas_data_path'] + '/{study}.qced.h.tsv.gz',
         bim_file = config['target_data_path'] + "/" + config['target_data_prefix'] + ".bim"
     conda: "../environment.yaml"
     output:
         config['results_path']+'/'+config['results_directory_name']+'/{study}.all_score'
     params:
         target = config['target_data_path'] + "/" + config['target_data_prefix'],
-        out = config['results_path']+'/'+config['results_directory_name']+'/{study}'
+        out = config['results_path']+'/'+config['results_directory_name']+'/{study}',
+        sumstat = get_path
     shell:
         """
         PRSice \
-        --base {input.sumstat} \
+        --base {params.sumstat}/{wildcards.study}.qced.h.tsv.gz \
         --snp VARID \
         --no-default \
         --chr CHR \
