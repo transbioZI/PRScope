@@ -12,52 +12,110 @@ input <- args[1]
 output <- args[2]
 maf_file <- args[3]
 N = as.numeric(args[4])
-print(input)
+output_other_files = args[5]
+
 base <- fread(input, showProgress = FALSE, data.table = F)
 
+write.table(summary(base),paste0(output_other_files,".summary.before_qc.tsv"), quote = F, sep = "\t", col.names = T, row.names = F)
+
+problematic_beta = FALSE
+beta_reason = NA
+columns_dropped = FALSE
+columns_before = colnames(base)
 if(any(table(colnames(base)) > 1)) {
   base[,names(table(colnames(base))[table(colnames(base)) > 1])] = NULL # drop duplicate columns
+  columns_dropped = TRUE
 }
 
-writeLines(as.character(dim(base)[1]), paste0(output,".snpcount_before"))
+drop_columns = c("BETA","Z_SCORE") # it should be lowercase beta or z_score
 
-drop_columns = c("SNP","CHR","BP","A1","A2","BETA","OR","P","SE","MAF","VARID")
 df_colnames = colnames(base)
 if(any(is.element(df_colnames, drop_columns))) {
   base[,which(is.element(df_colnames, drop_columns) == TRUE)] = NULL
-} 
+  columns_dropped = TRUE
+}
+
+colnames(base) = toupper(colnames(base))
+
+if(any(table(colnames(base)) > 1)) {
+  base[,names(table(colnames(base))[table(colnames(base)) > 1])] = NULL # drop duplicate columns
+  columns_dropped = TRUE
+}
+
+drop_columns = c("SNP","CHR","BP","A1","A2","OR","P","MAF","VARID")
+df_colnames = colnames(base)
+if(any(is.element(df_colnames, drop_columns))) {
+  base[,which(is.element(df_colnames, drop_columns) == TRUE)] = NULL
+  columns_dropped = TRUE
+}
+
+columns_after = colnames(base)
+snpcount_before = as.character(dim(base)[1])
 
 hm_readed = FALSE
-if("hm_beta" %in% colnames(base)) {
-  
-  colnames(base)[which(names(base) == "hm_rsid")] <- "SNP"
-  colnames(base)[which(names(base) == "hm_chrom")] <- "CHR"
-  colnames(base)[which(names(base) == "hm_pos")] <- "BP"
-  colnames(base)[which(names(base) == "hm_other_allele")] <- "A2"
-  colnames(base)[which(names(base) == "hm_effect_allele")] <- "A1"
-  colnames(base)[which(names(base) == "hm_beta")] <- "BETA"
-  colnames(base)[which(names(base) == "hm_odds_ratio")] <- "OR"
+if("HM_BETA" %in% colnames(base)) {
+  colnames(base)[which(names(base) == "HM_RSID")] <- "SNP"
+  colnames(base)[which(names(base) == "HM_CHROM")] <- "CHR"
+  colnames(base)[which(names(base) == "HM_POS")] <- "BP"
+  colnames(base)[which(names(base) == "HM_OTHER_ALLELE")] <- "A2"
+  colnames(base)[which(names(base) == "HM_EFFECT_ALLELE")] <- "A1"
+  if("BETA" %in% colnames(base)) {
+    if(all(is.na(base$HM_BETA))) {
+      problematic_beta = FALSE
+      beta_reason = "hm_beta is NA"
+    }
+    base$BETA = NULL
+  }
+  colnames(base)[which(names(base) == "HM_BETA")] <- "BETA"
+  colnames(base)[which(names(base) == "HM_ODDS_RATIO")] <- "OR"
   hm_readed = TRUE
 } else {
 
-  if(!("beta" %in% colnames(base))) {
-    base$beta = NA
+  if(!("BETA" %in% colnames(base))) {
+    base$BETA = NA
   }
-  if(!("odds_ratio" %in% colnames(base))) {
-    base$odds_ratio = NA
+  if(!("ODDS_RATIO" %in% colnames(base))) {
+    base$ODDS_RATIO = NA
   }
 
-  colnames(base)[which(names(base) == "rsid")] <- "SNP"
-  colnames(base)[which(names(base) == "chromosome")] <- "CHR"
-  colnames(base)[which(names(base) == "base_pair_location")] <- "BP"
-  colnames(base)[which(names(base) == "other_allele")] <- "A2"
-  colnames(base)[which(names(base) == "effect_allele")] <- "A1"
-  colnames(base)[which(names(base) == "beta")] <- "BETA"
-  colnames(base)[which(names(base) == "odds_ratio")] <- "OR"
+  colnames(base)[which(names(base) == "RSID")] <- "SNP"
+  colnames(base)[which(names(base) == "CHROMOSOME")] <- "CHR"
+  colnames(base)[which(names(base) == "BASE_PAIR_LOCATION")] <- "BP"
+  colnames(base)[which(names(base) == "OTHER_ALLELE")] <- "A2"
+  colnames(base)[which(names(base) == "EFFECT_ALLELE")] <- "A1"
+  colnames(base)[which(names(base) == "BETA")] <- "BETA"
+  colnames(base)[which(names(base) == "ODDS_RATIO")] <- "OR"
 }
 
-colnames(base)[which(names(base) == "p_value")] <- "P"
-colnames(base)[which(names(base) == "standard_error")] <- "SE"
+if(("STANDARD_ERROR" %in% colnames(base)) & ("SE" %in% colnames(base))) {
+  if(all(is.na(base$STANDARD_ERROR)) & all(is.na(base$SE))) {
+    base$SE = NULL
+  }
+
+  if(!all(is.na(base$STANDARD_ERROR)) & !all(is.na(base$SE))) {
+    base$SE = NULL
+  }
+
+  if(!all(is.na(base$STANDARD_ERROR)) & all(is.na(base$SE))) {
+    base$SE = NULL
+  }
+
+  if(all(is.na(base$STANDARD_ERROR)) & !all(is.na(base$SE))) {
+    base$STANDARD_ERROR = base$SE
+    base$SE = NULL
+  }
+}
+
+if(!("STANDARD_ERROR" %in% colnames(base))) {
+  if("SE" %in% colnames(base)) {
+    colnames(base)[which(names(base) == "SE")] <- "STANDARD_ERROR"
+  } else {
+    base$STANDARD_ERROR = NA
+  }
+}
+
+colnames(base)[which(names(base) == "P_VALUE")] <- "P"
+colnames(base)[which(names(base) == "STANDARD_ERROR")] <- "SE"
 
 base$MAF = 0
 base$VARID <- str_c(base$CHR, ":", base$BP)
@@ -71,7 +129,7 @@ if(dim(base)[1] != 0 ) {
   	base[matches_not_na,]$MAF = maf$MAF[matches[!is.na(matches)]]
   }
 }
-
+rm(maf)
 tmp_l = dim(base)[1]
 base <- dplyr::filter(base, MAF > 0.001)
 tmp_l2 = dim(base)[1]
@@ -81,13 +139,14 @@ if(tmp_l2 == 0 & tmp_l > 0) {
   problematic_MAF_match = TRUE
 }
 
-if ("n" %in% colnames(base)) {
-  colnames(base)[which(colnames(base) == "n")] = "N"
-} else if("N" %in% colnames(base)) {
-  # do nothing
+if ("N" %in% colnames(base)) {
+  if(all(is.na(base$N))) {
+    base$N = N
+  }
 } else {
   base$N = N
 }
+
 base$N = suppressWarnings(as.numeric(base$N))
 tmp_l = dim(base)[1]
 base = dplyr::filter(base, !(is.na(N)))
@@ -100,13 +159,12 @@ if(tmp_l2 == 0 & tmp_l > 0) {
 }
 
 z_score_studies = FALSE
-if((sum(is.na(base$BETA)) == length(base$BETA)) & (sum(is.na(base$OR)) == length(base$OR))) {
-  if(("z_score" %in% colnames(base))) {
-    base = dplyr::filter(base, !(is.na(SE)))
-    base = dplyr::filter(base, !(is.na(z_score)))
-    base$BETA = base$SE*base$z_score
-    z_score_studies = TRUE
-  }
+if(all(is.na(base$BETA)) & all(is.na(base$OR))) {
+   if(("Z_SCORE" %in% colnames(base))) {
+     base = dplyr::filter(base, !(is.na(Z_SCORE)))
+     base$BETA = base$Z_SCORE
+     z_score_studies = TRUE
+   }
 }
 
 base = base %>% select(SNP,CHR,BP,A1,A2,BETA,OR,P,SE,N,MAF,VARID)
@@ -114,9 +172,9 @@ base = base %>% select(SNP,CHR,BP,A1,A2,BETA,OR,P,SE,N,MAF,VARID)
 #### Remove SNPs with no beta or OR - these cannot be used by PRSice ####
 base <- dplyr::filter(base, !(is.na(BETA) == TRUE & is.na(OR) == TRUE))
 
-problematic_beta = FALSE
 if(dim(base)[1] == 0 ) {
     problematic_beta = TRUE
+    beta_reason = "BETA is NA"
 }
 
 base <- subset(base, nchar(as.character(A1)) == 1)
@@ -144,9 +202,10 @@ base <- base %>% mutate(P = if_else(is.na(P), 1, as.numeric(P)))
 base <- distinct(base, SNP, .keep_all = TRUE)
 base <- distinct(base, VARID, .keep_all = TRUE)
 
-if(dim(base)[1] != 0 ) {
+if(dim(base)[1] != 0 & z_score_studies != TRUE) {
   if(abs(median(base$BETA)) > 0.5 ) {
     problematic_beta = TRUE
+    beta_reason = "BETA valut does not have expected range."
   }
 }
 
@@ -157,12 +216,29 @@ if(dim(base)[1] != 0 ) {
   }
 }
 
-writeLines(as.character(problematic_N), paste0(output,".problematic_N"))
-writeLines(as.character(problematic_p_value), paste0(output,".problematic_p_value"))
-writeLines(as.character(problematic_beta), paste0(output,".problematic_beta"))
-writeLines(as.character(problematic_MAF_match), paste0(output,".problematic_MAF_match"))
-writeLines(as.character(hm_readed), paste0(output,".hm_readed"))
-writeLines(as.character(dim(base)[1]), paste0(output,".snpcount"))
-writeLines(as.character(z_score_studies), paste0(output,".z_score_converted"))
+problematic_SE = FALSE
+if(all(is.na(base$SE))) {
+    problematic_SE = TRUE
+}
 
-fwrite(base[,c("VARID","SNP","CHR","BP","A1","A2","P","MAF","BETA","OR","SE", "N")], file = output, quote = F, row.names = F, sep = "\t", compress = "gzip")
+problematic_CHR = FALSE
+
+if(length(table(base$CHR)) !=22) {
+  problematic_CHR = TRUE
+}
+
+dfx = data.frame(matrix(ncol = 14, nrow = 1))
+colnames(dfx) <- c("problematic_N", "problematic_p_value", "problematic_beta","problematic_beta_reason", "problematic_MAF_match", "hm_readed","snpcount",
+                                "z_score_converted", "problematic_SE", "problematic_CHR","snpcount_in_raw_file","columns_dropped","columns_before","columns_after")
+
+dfx[1,]= c(problematic_N,problematic_p_value, problematic_beta,beta_reason,problematic_MAF_match,hm_readed ,dim(base)[1], z_score_studies,problematic_SE,problematic_CHR,snpcount_before,columns_dropped,paste0(columns_before,collapse = ","),paste0(columns_after,collapse = ","))
+
+write.table(dfx,paste0(output_other_files,".metadata.tsv"), quote = F, sep = "\t", col.names = T, row.names = F)
+
+base = base[,c("VARID","SNP","CHR","BP","A1","A2","P","MAF","BETA","OR","SE","N")]
+
+write.table(summary(base),paste0(output_other_files,".summary.qced.tsv"), quote = F, sep = "\t", col.names = T, row.names = F)
+
+fwrite(base, file = output, quote = F, row.names = F, sep = "\t", compress = "gzip")
+
+writeLines(as.character(warnings()),paste0(output_other_files,".warnings"))

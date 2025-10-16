@@ -21,9 +21,9 @@ def get_genetic_correlation_command(st):
     st = str(st)
     all_studies = studies_to_calculate()
     index_of_st = all_studies.index(st)
-    command_str = "--rg " + config['gwas_data_path_genetic_correlation'] + "/munged/" + st + ".sumstats.gz"
+    command_str = "--rg " + config['gwas_data_path_genetic_correlation'] + "/" + st + "/munged/" + st + ".sumstats.gz"
     if (index_of_st+1) == len(all_studies):
-        return "--h2 " + config['gwas_data_path_genetic_correlation'] + "/munged/"+st+".sumstats.gz"
+        return "--h2 " + config['gwas_data_path_genetic_correlation'] + "/" + st + "/munged/" + st + ".sumstats.gz"
 
     commands = list()
     commands.append(command_str)
@@ -40,24 +40,24 @@ def get_path(st):
     
 rule all:
     input:
-        config["study_list_for_genetic_correlation"] + ".genetic_correlation"
+        config["output_genetic_correlation_gwas_list"] + ".genetic_correlation.tsv"
 
 rule munge_study:
     input:
         config['gwas_data_path_genetic_correlation'] + "/{study}.qced.h.tsv.gz"
     conda: "../environment_for_ldsc.yaml"
     output:
-        config['gwas_data_path_genetic_correlation'] + "/munged/{study}.sumstats.gz"
+        config['gwas_data_path_genetic_correlation'] + "/{study}/munged/{study}.sumstats.gz"
     params:
         study_path = get_path
     shell:
         """
-        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {params.study_path}/{wildcards.study}.qced.h.tsv.gz --N-col N --out {config[gwas_data_path_genetic_correlation]}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE,SE
+        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {params.study_path}/{wildcards.study}.qced.h.tsv.gz --N-col N --out {config[gwas_data_path_genetic_correlation]}/{wildcards.study}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE,SE
         """
 
 rule calculate_genetic_correlation:
     input:
-        expand(config['gwas_data_path_genetic_correlation'] + "/munged/{study}.sumstats.gz", study = studies_to_calculate())
+        expand(config['gwas_data_path_genetic_correlation'] + "/{study}/munged/{study}.sumstats.gz", study = studies_to_calculate())
     conda: "../environment_for_ldsc.yaml"
     params:
         command_str = get_genetic_correlation_command
@@ -73,8 +73,8 @@ rule create_pairwise_correlation_matrix:
         expand(config['output_path_genetic_correlation'] + "/{study}.log", study = studies_to_calculate())
     conda: "../environment_for_ldsc.yaml"
     output:
-        config["study_list_for_genetic_correlation"] + ".genetic_correlation"
+        config["output_genetic_correlation_gwas_list"] + ".genetic_correlation.tsv"
     shell:
         """
-        Rscript {config[repository]}/scripts/create_genetic_correlation_table.R {config[output_path_genetic_correlation]} {config[study_list_for_genetic_correlation]} {config[rg_thr]}
+        Rscript {config[repository]}/scripts/create_genetic_correlation_table.R {config[output_path_genetic_correlation]} {config[study_list_for_genetic_correlation]} {config[rg_thr]} {config[output_genetic_correlation_gwas_list]}
         """

@@ -11,6 +11,7 @@ threshold = as.numeric(args[2])
 up_threshold = as.numeric(args[3])
 study_list = args[4]
 name = args[5]
+output_prsice_gwas_list = args[6]
 
 study_metadata = fread(study_list)
 study_metadata = study_metadata[study_metadata$genetic_correlation_passed == TRUE,]
@@ -72,6 +73,6 @@ prs_calculated[match(studies_empty,files)] = FALSE
 
 study_metadata$prs_calculated = prs_calculated
 
-write.table(apply(study_metadata,2,as.character),paste0(study_list,".prs_calculated"), quote = F,col.names = T, row.names = F, sep = "\t")
+write.table(apply(study_metadata,2,as.character),paste0(output_prsice_gwas_list,".prsice_calculated.tsv"), quote = F,col.names = T, row.names = F, sep = "\t")
 
 write.table(df[,-1], paste0(prs_path,"/",name,"_",threshold,".tsv"), row.names = F, col.names = T, quote = F,sep="\t")

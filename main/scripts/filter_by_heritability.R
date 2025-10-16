@@ -7,7 +7,7 @@ suppressMessages(library(data.table))
 
 apply_which_false = function(condition, threshold, criteria) {
     return(sapply(condition,function(x) {
-        ifelse(x, "", paste0(criteria,": FALSE threshold: ",as.character(threshold)))
+        ifelse(x, "", paste0(criteria,": FAIL, threshold: ",as.character(threshold)))
     }))
 }
 
@@ -17,6 +17,7 @@ studies_list_path = args[2]
 heritability_threshold_zscore = as.numeric(args[3])
 output_path = args[4]
 munged_file_path = args[5]
+output_heritability_gwas_list = args[6]
 
 snp_used_thr = 200000
 mean_chi_munged_thr = 1.02
@@ -191,9 +192,9 @@ tmp = rep(FALSE,length(studies))
 tmp[which(complete_results$z_score > heritability_threshold_zscore & complete_results$snps_used > snp_used_thr & complete_results$mean_chi_munged >= mean_chi_munged_thr )] = TRUE
 complete_results$heritability_passed = tmp
 
-a = apply_which_false(complete_results$z_score > heritability_threshold_zscore, heritability_threshold_zscore, "z_score")
-b = apply_which_false(complete_results$snps_used > snp_used_thr, snp_used_thr, "snp_used")
-c = apply_which_false(complete_results$mean_chi_munged, mean_chi_munged, "mean_chi_munged")
+a = apply_which_false(complete_results$z_score > heritability_threshold_zscore, heritability_threshold_zscore, "Z SCORE")
+b = apply_which_false(complete_results$snps_used > snp_used_thr, snp_used_thr, "SNP USED")
+c = apply_which_false(complete_results$mean_chi_munged, mean_chi_munged, "MEAN CHI MUNGED")
 
 all_criteria = data.frame(x= a,y =b, z = c)
 
@@ -224,4 +225,4 @@ cm = sapply(c(1:length(comment_heritability)), function(x) {
 })
 
 complete_results$qc_passed_comment = cm
-write.table(complete_results,paste0(studies_list_path,".heritability"), quote = F,col.names = T, row.names = F, sep = "\t")
+write.table(complete_results,paste0(output_heritability_gwas_list,".heritability.tsv"), quote = F,col.names = T, row.names = F, sep = "\t")

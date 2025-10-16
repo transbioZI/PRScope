@@ -2,8 +2,6 @@ import os
 import urllib.request
 import pandas
 
-os.system("rm -f " +  config['output_path_qced_gwas'] + "/*_inprogress*")
-
 def studies_to_calculate():
     csvFile = pandas.read_csv(config["study_list"], sep='\t', engine='python')
     csvFile["sample_size"] = csvFile['sample_size'].astype('int')
@@ -49,45 +47,44 @@ def get_keys():
 
 rule all:
     input:
-        config['study_list'] + ".qced"
+        config['output_qc_gwas_list'] + ".qced.tsv"
 
 rule download_study:
     output:
-        config['output_path_qced_gwas'] + "/{study}_inprogress.h.tsv.gz"
+        config['output_path_qced_gwas'] + "/{study}" + "/raw/{study}.download.done"
     params:
         link = get_link,
-        output_inprogress = config['output_path_qced_gwas'] + "/{study}_inprogress.h.tsv.gz",
-        md5sum_download = config['output_path_qced_gwas'] + "/{study}_md5sum_download.txt"
+        output_inprogress = config['output_path_qced_gwas'] + "/{study}" + "/raw/{study}.h.tsv.gz",
+        md5sum_download = config['output_path_qced_gwas'] + "/{study}" + "/raw/{study}_md5sum_download.txt",
+        download_done = config['output_path_qced_gwas'] + "/{study}" + "/raw/{study}.download.done"
     shell:
         """
-        wget {params.link} -O {params.output_inprogress} --retry-connrefused --tries=10
-        md5sum {params.output_inprogress} > {params.md5sum_download}
+        wget {params.link} -O {params.output_inprogress} --retry-connrefused --tries=10 && md5sum {params.output_inprogress} > {params.md5sum_download} && touch {params.download_done}
         """
 
 rule download_md5sum:
     output:
-        config['output_path_qced_gwas'] + "/{study}_md5sum_real.txt"
+        config['output_path_qced_gwas'] + "/{study}"  + "/raw/{study}_md5sum_real.txt"
     params:
         md5sum = get_link_md5sum,
-        md5sum_real = config['output_path_qced_gwas'] + "/{study}_md5sum_real.txt"
+        md5sum_real = config['output_path_qced_gwas'] + "/{study}"  + "/raw/{study}_md5sum_real.txt"
     shell:
         """
-        wget --spider --force-html -i {params.md5sum} && wget {params.md5sum} -O {params.md5sum_real} --retry-connrefused --tries=10
-        touch {params.md5sum_real}
+        wget --spider --force-html -i {params.md5sum} && wget {params.md5sum} -O {params.md5sum_real} --retry-connrefused --tries=10 || touch {params.md5sum_real}
         """
 
 rule gzip_study:
     input:
         rules.download_study.output
     output:
-        config['output_path_qced_gwas'] + "/{study}.to_qc.h.tsv"
+        config['output_path_qced_gwas'] + "/{study}" + "/{study}.gzip.done"
     params:
-        output_inprogress = config['output_path_qced_gwas'] + "/{study}_inprogress.h.tsv.gz",
-        output_done = config['output_path_qced_gwas'] + "/{study}.to_qc.h.tsv.gz"
+        output_inprogress = config['output_path_qced_gwas'] +"/{study}/raw"+ "/{study}.h.tsv.gz",
+        output_done = config['output_path_qced_gwas'] + "/{study}/{study}.to_qc.h.tsv",
+        output_done_file = config['output_path_qced_gwas'] + "/{study}/{study}.gzip.done"
     shell:
         """
-        mv {params.output_inprogress} {params.output_done}
-        gzip -d {params.output_done}
+        gzip -dkc {params.output_inprogress}  > {params.output_done} && touch {params.output_done_file}
         """
 
 rule qc_gwas:
@@ -95,28 +92,30 @@ rule qc_gwas:
         rules.gzip_study.output
     conda: "../environment.yaml"
     output:
-        config['output_path_qced_gwas'] + "/{study}.qced.h.tsv.gz"
+        config['output_path_qced_gwas'] + "/{study}" + "/qced/{study}.qced.done"
     params:
         script = config['repository'] + "/scripts/qc_sumstats.R",
         maf_file = config['maf_file'],
-        N = get_sample_size
+        N = get_sample_size,
+        otput_other = config['output_path_qced_gwas'] + "/{study}/qced/{study}",
+        inp = config['output_path_qced_gwas'] + "/{study}" + "/{study}.to_qc.h.tsv",
+        qc_done = config['output_path_qced_gwas'] + "/{study}" + "/qced/{study}.qced.done",
+        out_p = config['output_path_qced_gwas'] + "/{study}" + "/qced/{study}.qced.h.tsv.gz"
     shell:
         """
-        Rscript {params.script} {input} {output} {params.maf_file} {params.N}
-        rm {input}
+        Rscript {params.script} {params.inp} {params.out_p} {params.maf_file} {params.N} {params.otput_other} && rm {params.inp} && touch {params.qc_done}
         """
 
 rule create_studies_metadata:
     input:
-        expand(config['output_path_qced_gwas'] + "/{study}.qced.h.tsv.gz", study = get_keys()),
-        expand(config['output_path_qced_gwas'] + "/{study}_md5sum_real.txt", study = get_keys())
+        expand(config['output_path_qced_gwas'] + "/{study}" + "/qced/{study}.qced.done", study = get_keys()),
+        expand(config['output_path_qced_gwas'] + "/{study}" + "/raw/{study}_md5sum_real.txt", study = get_keys())
     conda: "../environment.yaml"
     output:
-        config['study_list']+".qced"
+        config['output_qc_gwas_list']+".qced.tsv"
     params:
         number_of_snps_script = config['repository'] + "/scripts/create_metadata_files_of_GWAS.R"
     shell:
         """
-        Rscript {params.number_of_snps_script} {config[output_path_qced_gwas]} {config[study_list]} {config[number_of_snps_after_qc]}
+        Rscript {params.number_of_snps_script} {config[output_path_qced_gwas]} {config[study_list]} {config[number_of_snps_after_qc]} {config[output_qc_gwas_list]}
         """
-

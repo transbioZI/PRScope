@@ -10,6 +10,7 @@ args = commandArgs(trailingOnly=TRUE)
 genetic_cor_results =  args[1]
 genetic_cor_study_list = args[2]
 rg_max = as.numeric(args[3])
+output_genetic_correlation_gwas_list = args[4]
 
 st_df = fread(genetic_cor_study_list)
 st_df = st_df[st_df$heritability_passed == TRUE, ]
@@ -48,7 +49,7 @@ dtf = dtf[which(dtf$p1 %in% st_list),]
 dtf = dtf[which(dtf$p2 %in% st_list),]
 dtf = dtf[!duplicated(dtf$id),]
 
-write.table(dtf,paste0(genetic_cor_study_list,".all_genetic_correlations"), sep="\t", row.names = F, col.names = T, quote=F)
+write.table(dtf,paste0(output_genetic_correlation_gwas_list,".all_genetic_correlations.tsv"), sep="\t", row.names = F, col.names = T, quote=F)
 
 high_rg <- which(abs(dtf$rg) >= rg_max)
 
@@ -124,13 +125,13 @@ df$genetic_correlation_passed = passed
   df$correlated_with = ""
 }
 
-apply_which_false = function(condition, threshold, criteria) {
+apply_which_false = function(condition, criteria) {
   return(sapply(condition,function(x) {
-    ifelse(x, "", paste0(criteria,": FALSE threshold: ",as.character(threshold)))
+    ifelse(x, "", paste0(criteria,": FAIL"))
   }))
 }
 
-a = apply_which_false(df$genetic_correlation_passed == TRUE, "FALSE", "genetic_correlation")
+a = apply_which_false(df$genetic_correlation_passed == TRUE, "GC")
 
 cm = sapply(c(1:length(a)), function(x) {
   res=""
@@ -158,4 +159,4 @@ st_df_2[match(df$study_id,st_df_2$study_id),]$qc_passed_comment = df$qc_passed_c
 st_df_2[match(df$study_id,st_df_2$study_id),]$genetic_correlation_passed = df$genetic_correlation_passed
 st_df_2[match(df$study_id,st_df_2$study_id),]$correlated_with = df$correlated_with
 
-write.table(st_df_2,paste0(genetic_cor_study_list,".genetic_correlation"), quote = F,col.names = T, row.names = F, sep = "\t")
+write.table(st_df_2,paste0(output_genetic_correlation_gwas_list,".genetic_correlation.tsv"), quote = F,col.names = T, row.names = F, sep = "\t")

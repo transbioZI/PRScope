@@ -28,17 +28,17 @@ def get_path(st):
     
 rule all:
     input:
-        config['study_list_for_heritability'] + ".heritability"
+        config['output_heritability_gwas_list'] + ".heritability.tsv"
 
 rule munge_study:
     conda: "../environment_for_ldsc.yaml"
     output:
-        config['gwas_data_path_heritability'] + "/munged/{study}.sumstats.gz"
+        config['gwas_data_path_heritability'] + "/{study}/munged/{study}.sumstats.gz"
     params:
         study_path = get_path
     shell:
         """
-        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {params.study_path}/{wildcards.study}.qced.h.tsv.gz --N-col N --out {config[gwas_data_path_heritability]}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE,SE
+        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {params.study_path}/{wildcards.study}.qced.h.tsv.gz --N-col N --out {config[gwas_data_path_heritability]}/{wildcards.study}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE,SE
         """
 
 rule calculate_heritability:
@@ -49,7 +49,7 @@ rule calculate_heritability:
         config['output_path_heritability'] + "/{study}.log"
     shell:
         """
-        python2 {ldsc_path}/ldsc.py --h2 {config[gwas_data_path_heritability]}/munged/{wildcards.study}.sumstats.gz --ref-ld-chr {config[ld_ref]}/ --w-ld-chr {config[ld_ref]}/ --out {config[output_path_heritability]}/{wildcards.study}
+        python2 {ldsc_path}/ldsc.py --h2 {config[gwas_data_path_heritability]}/{wildcards.study}/munged/{wildcards.study}.sumstats.gz --ref-ld-chr {config[ld_ref]}/ --w-ld-chr {config[ld_ref]}/ --out {config[output_path_heritability]}/{wildcards.study}
         """
 
 rule filter_heritability:
@@ -57,10 +57,10 @@ rule filter_heritability:
         expand(config['output_path_heritability'] + "/{study}.log", study = studies_to_calculate())
     conda: "../environment_for_ldsc.yaml"
     output:
-        config['study_list_for_heritability'] + ".heritability"
+        config['output_heritability_gwas_list'] + ".heritability.tsv"
     params:
         script = config['repository'] + "/scripts/filter_by_heritability.R"
     shell:
         """
-        Rscript {params.script} {config[output_path_heritability]} {config[study_list_for_heritability]} {config[heritability_min_zscore]} {config[output_path_heritability]} {config[gwas_data_path_heritability]}/munged
+        Rscript {params.script} {config[output_path_heritability]} {config[study_list_for_heritability]} {config[heritability_min_zscore]} {config[output_path_heritability]} {config[gwas_data_path_heritability]}/{wildcards.study}/munged {config[output_heritability_gwas_list]}
         """

@@ -7,34 +7,36 @@ number_of_snps: 250000
 harmonised_list: http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/harmonised_list.txt
 number_of_cases: 5000
 number_of_controls: 5000
-pubmed_ids_to_exclude: 34662886
+pubmed_ids_to_exclude: 34662886,39633006,29942085
 
 # GWAS QC module
 study_list: output/gwas_list/gwas_search.txt.tsv
+output_qc_gwas_list: output/gwas_list/gwas_search
 output_path_qced_gwas: output/qced_gwas
-maf_file: input/reference/eur_hg38.phase3.frq
+maf_file: input/reference/eur_hg38_rs.phase3.frq
 number_of_snps_after_qc: 250000
 
-
 # Heritability
-study_list_for_heritability: output/gwas_list/gwas_search.txt.tsv.qced
+study_list_for_heritability: output/gwas_list/gwas_search.qced.tsv
+output_heritability_gwas_list: output/gwas_list/gwas_search
 gwas_data_path_heritability: output/qced_gwas
-hm3_path: input/reference/ldscore/eur_w_ld_chr/w_hm3.snplist
+hm3_path: input/reference/ldscores_extended_hg38/w_hm3.snplist.hg38.extended.table
 ldsc_path: # default is repository/main/tools/ldsc
 chunksize: 100000
-ld_ref: input/reference/ldscore/eur_w_ld_chr_hg38
+ld_ref: input/reference/ldscores_extended_hg38
 heritability_min_zscore: 4
 output_path_heritability: output/heritability
 
 # Genetic Correlation
-study_list_for_genetic_correlation: output/gwas_list/gwas_search.txt.tsv.qced.heritability
+study_list_for_genetic_correlation: output/gwas_search.heritability.tsv
 gwas_data_path_genetic_correlation: output/qced_gwas
+output_genetic_correlation_gwas_list: output/gwas_list/gwas_search
 ldsc_path: # default is repository/main/tools/ldsc
-ld_ref: input/reference/ldscore/eur_w_ld_chr_hg38
+ld_ref: input/reference/ldscores_extended_hg38
 output_path_genetic_correlation: output/genetic_correlation
-rg_thr: 0.98
+rg_thr: 0.95
 chunksize_gen_cor: 100000
-hm3_path_gen_cor: input/reference/ldscore/eur_w_ld_chr/w_hm3.snplist
+hm3_path_gen_cor: input/reference/ldscores_extended_hg38/w_hm3.snplist.hg38.extended.table
 
 # Genotpye QC module
 target_data: input/genotype
@@ -53,7 +55,8 @@ relatedness: 0.1875 #Threshold for acceptable proportion of IBD between pair of 
 genotype: hg38
 
 # PGS calculation PRSice
-studies_to_calculate: output/gwas_list/gwas_search.txt.tsv.qced.heritability.genetic_correlation
+studies_to_calculate: output/gwas_list/gwas_search.genetic_correlation.tsv
+output_prsice_gwas_list: output/gwas_list/gwas_search
 results_path: output
 results_directory_name: calculated_pgs_prsice
 results_data_table_name: pgs_datatable_prsice
