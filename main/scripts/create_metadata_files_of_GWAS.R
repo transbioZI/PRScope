@@ -41,7 +41,7 @@ if(length(studies) != 0) {
     md1 = readLines(paste0(path_to_sumstats,"/",f,"/raw/",f,"_md5sum_download.txt"))
     md1 = str_split(md1[1],"\\s+")[[1]][1]
     if(file.exists(paste0(path_to_sumstats,"/",f,"/raw/",f,"_md5sum_real.txt"))) {
-    	md2 = readLines(paste0(path_to_sumstats,"/",f,"_md5sum_real.txt"))
+    	md2 = readLines(paste0(path_to_sumstats,"/",f,"/raw/",f,"_md5sum_real.txt"))
     	md2 = md2[grepl("*.h.tsv.gz$",md2)]
     	md2 = str_split(md2[1],"\\s+")[[1]][1]
     } else {
@@ -62,7 +62,7 @@ if(length(studies) != 0) {
     grepl("U.K.",x, fixed = TRUE)
   })
 
-  merge_with_study_file = join(complete_results, qc_report_gwas, by="study_id")
+  merge_with_study_file = left_join(complete_results, qc_report_gwas, by="study_id")
 
   SNP_count_after_QC = as.numeric(merge_with_study_file$SNP_count_after_QC)
   P_failed = as.logical(merge_with_study_file$P_failed)
@@ -76,11 +76,17 @@ if(length(studies) != 0) {
              (P_failed == FALSE) &
              (BETA_failed == FALSE) &
              (CHR_failed == FALSE) &
+             !(is.na(SAMPLE_SIZE)) &
+             (SAMPLE_SIZE > 0))] = TRUE
+  qc_p_ldpred = rep(FALSE,length(studies))
+  qc_p_ldpred[which((SNP_count_after_QC > number_of_snps) &
+             (P_failed == FALSE) &
+             (BETA_failed == FALSE) &
+             (CHR_failed == FALSE) &
              (SE_failed == FALSE) &
              (N_failed == FALSE) &
              !(is.na(SAMPLE_SIZE)) &
              (SAMPLE_SIZE > 0))] = TRUE
-
   a = apply_which_false(SNP_count_after_QC > number_of_snps, number_of_snps, "Number of SNPs")
   b = apply_which_false(CHR_failed == FALSE, NA, "CHR")
   c = apply_which_false(P_failed == FALSE, NA, "P")
@@ -104,6 +110,7 @@ if(length(studies) != 0) {
 
   merge_with_study_file$qc_passed_comment = comment_qc
   merge_with_study_file$qc_passed = qc_p
+  merge_with_study_file$qc_passed_ldpred = qc_p_ldpred
   write.table(merge_with_study_file,paste0(output_path,".qced.tsv"), quote = F, col.names = T, row.names = F, sep = "\t")
 } else {
   write.table(merge_with_study_file,paste0(output_path,".qced.tsv"), quote = F, col.names = T, row.names = F, sep = "\t")
