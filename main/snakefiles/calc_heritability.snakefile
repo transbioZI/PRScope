@@ -25,7 +25,7 @@ def get_path(st):
     index_of_st = csvFile["study_id"].tolist().index(str(st))
     sample_sizes = csvFile["path"].tolist()
     return str(sample_sizes[index_of_st])
-    
+
 rule all:
     input:
         config['output_heritability_gwas_list'] + ".heritability.tsv"
@@ -62,5 +62,5 @@ rule filter_heritability:
         script = config['repository'] + "/scripts/filter_by_heritability.R"
     shell:
         """
-        Rscript {params.script} {config[output_path_heritability]} {config[study_list_for_heritability]} {config[heritability_min_zscore]} {config[output_path_heritability]} {config[gwas_data_path_heritability]}/{wildcards.study}/munged {config[output_heritability_gwas_list]}
+        Rscript {params.script} {config[output_path_heritability]} {config[study_list_for_heritability]} {config[heritability_min_zscore]} {config[output_path_heritability]} {config[gwas_data_path_heritability]} {config[output_heritability_gwas_list]}
         """

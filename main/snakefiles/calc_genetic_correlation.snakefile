@@ -28,7 +28,7 @@ def get_genetic_correlation_command(st):
     commands = list()
     commands.append(command_str)
     for x in range(index_of_st+1, len(all_studies)):
-        commands.append(config['gwas_data_path_genetic_correlation'] + "/munged/" + all_studies[x] + ".sumstats.gz")
+        commands.append(config['gwas_data_path_genetic_correlation'] + "/" + all_studies[x] + "/munged/" + all_studies[x] + ".sumstats.gz")
 
     return ",".join(commands)
 
@@ -43,8 +43,6 @@ rule all:
         config["output_genetic_correlation_gwas_list"] + ".genetic_correlation.tsv"
 
 rule munge_study:
-    input:
-        config['gwas_data_path_genetic_correlation'] + "/{study}.qced.h.tsv.gz"
     conda: "../environment_for_ldsc.yaml"
     output:
         config['gwas_data_path_genetic_correlation'] + "/{study}/munged/{study}.sumstats.gz"

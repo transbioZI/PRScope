@@ -1,10 +1,6 @@
 import os
 import pandas as pd
 
-def read_studies(path):
-    with open(path) as file:
-        return(file.read().splitlines())
-
 def studies_to_calculate():
     csvFile = pd.read_csv(config["studies_to_calculate"], sep='\t', engine='python')
     csvFile.dropna(subset=['genetic_correlation_passed'], inplace=True)

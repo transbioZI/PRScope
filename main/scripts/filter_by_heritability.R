@@ -26,7 +26,7 @@ complete_results = fread(studies_list_path)
 studies = complete_results$study_id
 
 complete_results$mean_chi_munged = sapply(studies, function(study) {
-    file_path = paste0(munged_file_path,"/",study,".log")
+    file_path = paste0(munged_file_path,"/",study,"/munged/",study,".log")
     if (file.exists(file_path)) {
         heritability_result = readLines(file_path)
         ind = grep('^^Mean chi\\^2 = ', heritability_result)

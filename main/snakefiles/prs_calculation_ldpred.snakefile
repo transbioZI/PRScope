@@ -1,17 +1,22 @@
 import os
+import pandas as pd
 
 ldpred_path = config["ldpred_path"]
 
 if ldpred_path is None:
     ldpred_path = config["repository"] + "/tools/ldpred2"
 
-def read_studies(path):
-    with open(path) as file:
-        return(file.read().splitlines())
-
 def studies_to_calculate():
-    studies_map = read_studies(config['studies_to_calculate_ldpred'])
-    return set(studies_map)
+    csvFile = pd.read_csv(config["studies_to_calculate_ldpred"], sep='\t', engine='python')
+    csvFile.dropna(subset=['genetic_correlation_passed'], inplace=True)
+    csvFile = csvFile[csvFile['genetic_correlation_passed'] == True]
+    return csvFile['study_id']
+
+def get_path(st):
+    csvFile = pd.read_csv(config["studies_to_calculate_ldpred"], sep='\t', engine='python')
+    index_of_st = csvFile["study_id"].tolist().index(str(st))
+    sample_sizes = csvFile["path"].tolist()
+    return str(sample_sizes[index_of_st])
 
 rule all:
     input:
@@ -44,10 +49,10 @@ rule impute:
 
 rule calculate_LDSC:
     input:
-        rds = config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.' + config['imputation_mode'] + '.nomiss.rds',
-        gwas = ancient(config['gwas_data_path_ldpred'] + '/{study}.qced.h.tsv.gz')
+        rds = config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.' + config['imputation_mode'] + '.nomiss.rds'
     output:
         config['results_path_ldpred']+'/'+config['results_directory_name_ldpred'] + '/{study}' + '.' + config['mode']
+    params: gwas = get_path
     conda: "../environment.yaml"
     shell:
         """
@@ -59,9 +64,9 @@ rule calculate_LDSC:
             --col-stat BETA \
             --col-stat-se SE \
             --stat-type BETA \
-            --sumstats {input.gwas} \
+            --sumstats {params.gwas}/{wildcards.study}.qced.h.tsv.gz \
             --out {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/{wildcards.study}.{config[mode]} \
-            --cores 1 \
+            --cores 5 \
             --genomic-build hg38 \
             --name-score {wildcards.study} \
             --col-n N \
@@ -74,10 +79,8 @@ rule calculate_LDSC:
             --ld-meta-file {config[ldpred2_ref]}/map_hm3_plus.rds  \
             --ld-file {config[ldpred2_ref]}/ldref_hm3_plus/LD_with_blocks_chr@.rds \
             --geno-file-rds {input.rds} \
-            --tmp-dir {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study} \
-            --hyper-p-max {config[hyper_p_max]} || true
+            --tmp-dir {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study}
         rm -f -r {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study}
-        touch {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/{wildcards.study}.{config[mode]}
         """
 
 rule create_pgs_data_table:

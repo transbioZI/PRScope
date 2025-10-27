@@ -71,13 +71,14 @@ if(length(studies) != 0) {
   SE_failed = as.logical(merge_with_study_file$SE_failed)
   SAMPLE_SIZE = as.numeric(merge_with_study_file$sample_size)
   N_failed = as.numeric(merge_with_study_file$N_failed)
+  BETA_is_Z_SCORE = as.logical(merge_with_study_file$BETA_is_Z_SCORE)
   qc_p = rep(FALSE,length(studies))
   qc_p[which((SNP_count_after_QC > number_of_snps) &
              (P_failed == FALSE) &
              (BETA_failed == FALSE) &
              (CHR_failed == FALSE) &
              !(is.na(SAMPLE_SIZE)) &
-             (SAMPLE_SIZE > 0))] = TRUE
+             (SAMPLE_SIZE > 0) & (BETA_is_Z_SCORE == FALSE))] = TRUE
   qc_p_ldpred = rep(FALSE,length(studies))
   qc_p_ldpred[which((SNP_count_after_QC > number_of_snps) &
              (P_failed == FALSE) &
@@ -86,7 +87,7 @@ if(length(studies) != 0) {
              (SE_failed == FALSE) &
              (N_failed == FALSE) &
              !(is.na(SAMPLE_SIZE)) &
-             (SAMPLE_SIZE > 0))] = TRUE
+             (SAMPLE_SIZE > 0) & (BETA_is_Z_SCORE == FALSE))] = TRUE
   a = apply_which_false(SNP_count_after_QC > number_of_snps, number_of_snps, "Number of SNPs")
   b = apply_which_false(CHR_failed == FALSE, NA, "CHR")
   c = apply_which_false(P_failed == FALSE, NA, "P")
