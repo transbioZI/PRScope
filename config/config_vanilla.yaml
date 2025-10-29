@@ -20,23 +20,23 @@ number_of_snps_after_qc: 250000
 study_list_for_heritability: output/gwas_list/gwas_search.qced.tsv
 output_heritability_gwas_list: output/gwas_list/gwas_search
 gwas_data_path_heritability: output/qced_gwas
-hm3_path: input/reference/ldscores_extended_hg38/w_hm3.snplist.hg38.extended.table
+hm3_path: input/reference/ldscore/eur_w_ld_chr_hg38/w_hm3.snplist.hg38
 ldsc_path: # default is repository/main/tools/ldsc
 chunksize: 100000
-ld_ref: input/reference/ldscores_extended_hg38
+ld_ref: input/reference/ldscore/eur_w_ld_chr_hg38
 heritability_min_zscore: 4
 output_path_heritability: output/heritability
 
 # Genetic Correlation
-study_list_for_genetic_correlation: output/gwas_search.heritability.tsv
+study_list_for_genetic_correlation: output/gwas_list/gwas_search.heritability.tsv
 gwas_data_path_genetic_correlation: output/qced_gwas
 output_genetic_correlation_gwas_list: output/gwas_list/gwas_search
 ldsc_path: # default is repository/main/tools/ldsc
-ld_ref: input/reference/ldscores_extended_hg38
+ld_ref: input/reference/ldscore/eur_w_ld_chr_hg38
 output_path_genetic_correlation: output/genetic_correlation
 rg_thr: 0.95
-chunksize_gen_cor: 100000
-hm3_path_gen_cor: input/reference/ldscores_extended_hg38/w_hm3.snplist.hg38.extended.table
+chunksize_gen_cor: 300000
+hm3_path_gen_cor: input/reference/ldscore/eur_w_ld_chr_hg38/w_hm3.snplist.hg38
 
 # Genotpye QC module
 target_data: input/genotype
@@ -62,7 +62,6 @@ results_directory_name: calculated_pgs_prsice
 results_data_table_name: pgs_datatable_prsice
 target_data_path: output/qced_genotype/corrected_hg38/data_test_0005
 target_data_prefix: EUR.FINAL # name without extension (bim,bed,fam)
-gwas_data_path: output/qced_gwas
 clumping_reference_path: input/reference
 clumping_reference_prefix: eur_hg38.phase3 # name without extension (bim,bed,fam)
 clump_kb: 500
@@ -74,18 +73,17 @@ min_number_of_snps_included: 100
 min_number_of_snps_included_of_the_highest_p_value: 1000
 
 # PGS calculation LDpred
-studies_to_calculate_ldpred: output/gwas_list/gwas_search.txt
+studies_to_calculate_ldpred:
 results_path_ldpred: output
-results_directory_name_ldpred: calculated_pgs_ldpred
-results_data_table_name_ldpred: pgs_datatable_ldpred
+results_directory_name_ldpred: calculated_pgs_ldpred_psycourse
+results_data_table_name_ldpred: pgs_datatable_ldpred_psycourse
 mode : auto # or inf
 imputation_mode : random
 ldpred2_ref: /data/references/ldpred2_ref # clone : https://github.com/comorment/ldpred2_ref
-target_data_path_ldpred: /data/projects/on_going/CoviDrug/TRR/target/corrected_hg38/data_TRR_maf_0005/overlap
-target_data_prefix_ldpred: trr_overlap # name without extension (bim,bed,fam)
-gwas_data_path_ldpred: /data/sumstats/transformed
+target_data_path_ldpred:
+target_data_prefix_ldpred:  # name without extension (bim,bed,fam)
 ldpred_path:     # default is repository/main/tools/ldpred2
-intercept_max: 1.2
-intercept_min: 0.95
-heritability: 0.01
+intercept_max: 100
+intercept_min: 0
+heritability: 0.00
 hyper_p_max: 0.9
