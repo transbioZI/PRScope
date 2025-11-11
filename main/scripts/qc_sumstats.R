@@ -169,7 +169,8 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   if(all(is.na(base$BETA)) & all(is.na(base$OR))) {
      if(("Z_SCORE" %in% colnames(base))) {
        base = dplyr::filter(base, !(is.na(Z_SCORE)))
-       base$BETA = base$Z_SCORE
+       base$BETA = base$Z_SCORE / sqrt( 2 * base$MAF * ( 1 - base$MAF) * ( base$N + base$Z_SCORE^2 ) )
+       base$SE = 1 / sqrt( 2 * base$MAF * ( 1 - base$MAF ) * ( base$N + base$Z_SCORE^2 ) )
        z_score_studies = TRUE
      }
   }
@@ -209,7 +210,7 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   base <- distinct(base, SNP, .keep_all = TRUE)
   base <- distinct(base, VARID, .keep_all = TRUE)
 
-  if(dim(base)[1] != 0 & z_score_studies != TRUE) {
+  if(dim(base)[1] != 0 ) {
     if(abs(median(base$BETA)) > 0.5 ) {
       problematic_beta = TRUE
       beta_reason = "BETA valut does not have expected range."

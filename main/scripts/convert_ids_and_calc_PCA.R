@@ -73,7 +73,7 @@ system(paste0(plink2, " --bfile ", paste0(input,".temp1"), " --max-alleles 2 --s
 
 system( paste0("rm -rf ", input,".temp1*") )
 
-system(paste0(plink2, " --bfile ", paste0(input,".temp2"), " --make-bed --allow-no-sex --rm-dup force-first list --freq --het --missing --out ", output))
+system(paste0(plink2, " --bfile ", paste0(input,".temp2"), " --make-bed --allow-no-sex --rm-dup exclude-all list --freq --het --missing --out ", output))
 writeLines(log_file, paste0(output,".number_of_snps"))
 system( paste0("rm -rf ", input,".temp2*") )
 
