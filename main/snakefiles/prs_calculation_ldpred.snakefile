@@ -18,6 +18,12 @@ def get_path(st):
     sample_sizes = csvFile["path"].tolist()
     return str(sample_sizes[index_of_st])
 
+def get_effective_sample_size(st):
+    csvFile = pd.read_csv(config["studies_to_calculate_ldpred"], sep='\t', engine='python')
+    index_of_st = csvFile["study_id"].tolist().index(str(st))
+    sample_sizes = csvFile["neff"].tolist()
+    return float(sample_sizes[index_of_st])
+
 rule all:
     input:
         config['results_path_ldpred']+'/'+config['results_directory_name_ldpred']+'/'+config['results_data_table_name_ldpred']+'.tsv'
@@ -52,7 +58,9 @@ rule calculate_LDSC:
         rds = config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.' + config['imputation_mode'] + '.nomiss.rds'
     output:
         config['results_path_ldpred']+'/'+config['results_directory_name_ldpred'] + '/{study}' + '.' + config['mode']
-    params: gwas = get_path
+    params:
+        gwas = get_path,
+        neff = get_effective_sample_size
     conda: "../environment.yaml"
     shell:
         """
@@ -69,7 +77,6 @@ rule calculate_LDSC:
             --cores 5 \
             --genomic-build hg38 \
             --name-score {wildcards.study} \
-            --col-n N \
             --col-pvalue P \
             --col-bp BP \
             --col-A1 A1 \
@@ -79,6 +86,7 @@ rule calculate_LDSC:
             --ld-meta-file {config[ldpred2_ref]}/map_hm3_plus.rds  \
             --ld-file {config[ldpred2_ref]}/ldref_hm3_plus/LD_with_blocks_chr@.rds \
             --geno-file-rds {input.rds} \
+            --effective-sample-size {params.neff} \
             --tmp-dir {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study}
         rm -f -r {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study}
         """

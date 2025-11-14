@@ -14,10 +14,10 @@ studies = unique(readLines(input))
 if(length(studies) != 0) {
 studies_read = get_studies(study_id = studies)
 
-complete_results = data.frame(matrix(ncol = 14, nrow = length(studies)))
+complete_results = data.frame(matrix(ncol = 15, nrow = length(studies)))
 
 colnames(complete_results) <- c('study_id', 'efo_trait', 'reported_trait', "initial_sample", "replication_sample","snp_count",
-                                "publication_date","pubmed_id","title","publication", "sample_size", "number_of_cases","number_of_controls", "countries_of_recruitment")
+                                "publication_date","pubmed_id","title","publication", "sample_size", "number_of_cases","number_of_controls", "countries_of_recruitment","neff")
 
 complete_results$study_id = studies
 
@@ -81,13 +81,29 @@ complete_results$number_of_controls = sapply(initial_sample_size_info, function(
   total_controls
 })
 
+
+neff = c()
+for(i in c(1:nrow(complete_results))) {
+  n_case = as.numeric(complete_results$number_of_cases[i])
+  n_control = as.numeric(complete_results$number_of_controls[i])
+  total = as.numeric(complete_results$sample_size[i])
+  if(!is.na(n_case) & !is.na(n_control) & n_case != 0 & n_control != 0) {
+    n_eff = (4*n_case*n_control)/(n_case+n_control)
+    neff = c(neff,n_eff)
+  } else {
+    neff = c(neff,total)
+  }
+}
+
+complete_results$neff = neff
+
 write.table(apply(complete_results,2,as.character),output, quote = F,col.names = T, row.names = F, sep = "\t")
 } else {
 
-complete_results = data.frame(matrix(ncol = 14, nrow = 0))
+complete_results = data.frame(matrix(ncol = 15, nrow = 0))
 
 colnames(complete_results) <- c('study_id', 'efo_trait', 'reported_trait', "initial_sample", "replication_sample","snp_count",
-                                "publication_date","pubmed_id","title","publication", "sample_size", "number_of_cases","number_of_controls", "countries_of_recruitment")
+                                "publication_date","pubmed_id","title","publication", "sample_size", "number_of_cases","number_of_controls", "countries_of_recruitment","neff")
 write.table(apply(complete_results,2,as.character),output, quote = F,col.names = T, row.names = F, sep = "\t")
 
 }
