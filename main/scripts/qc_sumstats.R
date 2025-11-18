@@ -193,7 +193,6 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   base <- dplyr::filter(base, !(A1 == "G" & A2 == "C"))
   base <- dplyr::filter(base, !(A1 == "C" & A2 == "G"))
 
-
   base$BETA <- suppressWarnings(as.numeric(base$BETA))
   base$OR <- suppressWarnings(as.numeric(base$OR))
   base$CHR = suppressWarnings(as.numeric(base$CHR))
@@ -203,6 +202,14 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   base <- base %>%
     mutate(BETA = if_else(is.na(BETA), log(OR), BETA),
            OR = if_else(is.na(OR), exp(BETA), OR))
+
+  base <- dplyr::filter(base, (is.finite(BETA) == TRUE))
+  base <- dplyr::filter(base, (is.finite(OR) == TRUE))
+
+  if(dim(base)[1] == 0 ) {
+      problematic_beta = TRUE
+      beta_reason = "BETA is infinite"
+  }
 
   #### For SNPs with no p-value, replace the NA by a 1 ####
   base <- base %>% mutate(P = if_else(is.na(P), 1, as.numeric(P)))
