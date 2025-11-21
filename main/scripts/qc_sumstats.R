@@ -5,6 +5,7 @@ suppressMessages(library(data.table))
 suppressMessages(library(optparse))
 suppressMessages(library(dplyr))
 suppressMessages(library(gwasrapidd))
+suppressMessages(library(bigsnpr))
 
 args = commandArgs(trailingOnly=TRUE)
 
@@ -13,6 +14,8 @@ output <- args[2]
 maf_file <- args[3]
 N = as.numeric(args[4])
 output_other_files = args[5]
+NEFF = args[6]
+genome_build = args[7]
 
 base <- fread(input, showProgress = FALSE, data.table = F)
 
@@ -128,12 +131,18 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   base$VARID <- str_c(base$CHR, ":", base$BP)
 
   if(dim(base)[1] != 0 ) {
-    maf = as.data.frame(fread(maf_file, select = c("SNP","MAF"), showProgress = FALSE))
+    if(genome_build == "hg38") {
+      maf = as.data.frame(fread(maf_file, select = c("SNP","MAF_hg38"), showProgress = FALSE))
+      colnames(maf)[colnames(maf) == "MAF_hg38"] = "MAF"
+    } else if(genome_build == "hg37") {
+      maf = as.data.frame(fread(maf_file_hg37, select = c("SNP","MAF_hg37"), showProgress = FALSE))
+      colnames(maf)[colnames(maf) == "MAF_hg37"] = "MAF"
+    }
     matches = match(base$SNP,maf$SNP)
     matches_na = which(is.na(matches))
     matches_not_na = which(!is.na(matches))
     if(length(matches_not_na) > 0) {
-    	base[matches_not_na,]$MAF = maf$MAF[matches[!is.na(matches)]]
+      base[matches_not_na,]$MAF = maf$MAF[matches[!is.na(matches)]]
     }
   }
   rm(maf)
@@ -249,6 +258,8 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   write.table(dfx,paste0(output_other_files,".metadata.tsv"), quote = F, sep = "\t", col.names = T, row.names = F)
 
   base = base[,c("VARID","SNP","CHR","BP","A1","A2","P","MAF","BETA","OR","SE","N")]
+
+  base$NEFF = NEFF
 
   write.table(summary(base),paste0(output_other_files,".summary.qced.tsv"), quote = F, sep = "\t", col.names = T, row.names = F)
 

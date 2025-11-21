@@ -50,7 +50,7 @@ rule munge_study:
         study_path = get_path
     shell:
         """
-        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {params.study_path}/{wildcards.study}.qced.h.tsv.gz --N-col N --out {config[gwas_data_path_genetic_correlation]}/{wildcards.study}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE,SE
+        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {params.study_path}/{wildcards.study}.qced.h.tsv.gz --N-col N --out {config[gwas_data_path_genetic_correlation]}/{wildcards.study}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE,SE,NEFF
         """
 
 rule calculate_genetic_correlation:

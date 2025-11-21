@@ -13,6 +13,18 @@ def get_sample_size(wildcards):
     sample_sizes = csvFile["sample_size"].tolist()
     return int(sample_sizes[index_of_st])
 
+def get_neff(wildcards):
+    csvFile = pandas.read_csv(config["study_list"], sep='\t', engine='python')
+    index_of_st = csvFile["study_id"].tolist().index(str(wildcards))
+    sample_sizes = csvFile["neff"].tolist()
+    return int(sample_sizes[index_of_st])
+
+def get_genome_build(wildcards):
+    csvFile = pandas.read_csv(config["study_list"], sep='\t', engine='python')
+    index_of_st = csvFile["study_id"].tolist().index(str(wildcards))
+    sample_sizes = csvFile["genome_build"].tolist()
+    return str(sample_sizes[index_of_st])
+
 def read_harmonised_list():
     os.system("mkdir -p " + config['output_path_qced_gwas'])
     harm = config['output_path_qced_gwas']+"/harmonised_list.txt"
@@ -97,18 +109,37 @@ rule qc_gwas:
         script = config['repository'] + "/scripts/qc_sumstats.R",
         maf_file = config['maf_file'],
         N = get_sample_size,
+        Neff = get_neff,
+        genome_build = get_genome_build,
         otput_other = config['output_path_qced_gwas'] + "/{study}/qced/{study}",
         inp = config['output_path_qced_gwas'] + "/{study}" + "/{study}.to_qc.h.tsv",
         qc_done = config['output_path_qced_gwas'] + "/{study}" + "/qced/{study}.qced.done",
         out_p = config['output_path_qced_gwas'] + "/{study}" + "/qced/{study}.qced.h.tsv.gz"
     shell:
         """
-        Rscript {params.script} {params.inp} {params.out_p} {params.maf_file} {params.N} {params.otput_other} && rm {params.inp} && touch {params.qc_done}
+        Rscript {params.script} {params.inp} {params.out_p} {params.maf_file} {params.N} {params.otput_other} {params.Neff} {params.genome_build} && rm {params.inp} && touch {params.qc_done}
+        """
+rule qc_gwas_ldpred:
+    input:
+        rules.qc_gwas.output
+    conda: "../environment.yaml"
+    output:
+        config['output_path_qced_gwas'] + "/{study}" + "/ldpred/{study}.qced.done"
+    params:
+        script = config['repository'] + "/scripts/qc_sumstats_ldpred.R",
+        inp = config['output_path_qced_gwas'] + "/{study}" + "/qced/{study}.qced.h.tsv.gz",
+        qc_done = config['output_path_qced_gwas'] + "/{study}" + "/ldpred/{study}.qced.done",
+        out_p = config['output_path_qced_gwas'] + "/{study}" + "/ldpred/{study}.qced.h.tsv.gz",
+        genome_build = get_genome_build
+    shell:
+        """
+        Rscript {params.script} {params.inp} {params.out_p} {config[ldpred2_ref]}/map_hm3_plus.rds {params.genome_build} && touch {params.qc_done}
         """
 
 rule create_studies_metadata:
     input:
         expand(config['output_path_qced_gwas'] + "/{study}" + "/qced/{study}.qced.done", study = get_keys()),
+        expand(config['output_path_qced_gwas'] + "/{study}" + "/ldpred/{study}.qced.done", study = get_keys()),
         expand(config['output_path_qced_gwas'] + "/{study}" + "/raw/{study}_md5sum_real.txt", study = get_keys())
     conda: "../environment.yaml"
     output:

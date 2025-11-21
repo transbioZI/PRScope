@@ -3,3 +3,4 @@ output_path_qced_gwas:
 maf_file:
 harmonised_list:
 number_of_snps_after_qc:
+ldpred2_ref: input/reference/ldpred2_ref # clone : https://github.com/comorment/ldpred2_ref

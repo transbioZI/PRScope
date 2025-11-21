@@ -14,3 +14,5 @@ dependencies:
   - r-bigsnpr
   - r-argparser
   - pandas
+  - r-igraph
+  - r-reshape2

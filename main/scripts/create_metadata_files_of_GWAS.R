@@ -53,6 +53,7 @@ if(length(studies) != 0) {
     res$identical_md5sum = identical(md1,md2)
     res$study_id = f
     res$path = paste0(path_to_sumstats,"/",f,"/qced")
+    res$path_ld = paste0(path_to_sumstats,"/",f,"/ldpred")
     metadata_list[[ai]] = res
   }
 
