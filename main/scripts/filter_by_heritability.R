@@ -12,12 +12,9 @@ apply_which_false = function(condition, threshold, criteria) {
 }
 
 args = commandArgs(trailingOnly=TRUE)
-heritability_results_path = args[1]
-studies_list_path = args[2]
-heritability_threshold_zscore = as.numeric(args[3])
-output_path = args[4]
-munged_file_path = args[5]
-output_heritability_gwas_list = args[6]
+studies_list_path = args[1]
+heritability_threshold_zscore = as.numeric(args[2])
+output_heritability_gwas_list = args[3]
 
 snp_used_thr = 200000
 mean_chi_munged_thr = 1.02
@@ -26,7 +23,7 @@ complete_results = fread(studies_list_path)
 studies = complete_results$study_id
 
 complete_results$mean_chi_munged = sapply(studies, function(study) {
-    file_path = paste0(munged_file_path,"/",study,"/munged/",study,".log")
+    file_path = paste0(complete_results[which(complete_results$study_id == study),]$path,"/munged/",study,".log")
     if (file.exists(file_path)) {
         heritability_result = readLines(file_path)
         ind = grep('^^Mean chi\\^2 = ', heritability_result)
@@ -41,7 +38,7 @@ complete_results$mean_chi_munged = sapply(studies, function(study) {
 })
 
 complete_results$observed_h2 = sapply(studies, function(study) {
-    file_path = paste0(heritability_results_path,"/",study,".log")
+    file_path = paste0(complete_results[which(complete_results$study_id == study),]$path,"/heritability/",study,".log")
     if (file.exists(file_path)) {
         heritability_result = readLines(file_path)
         ind = grep('^Total Observed scale h2', heritability_result)
@@ -56,7 +53,7 @@ complete_results$observed_h2 = sapply(studies, function(study) {
 })
 
 complete_results$observed_h2_se = sapply(studies, function(study) {
-    file_path = paste0(heritability_results_path,"/",study,".log")
+    file_path = paste0(complete_results[which(complete_results$study_id == study),]$path,"/heritability/",study,".log")
     if (file.exists(file_path)) {
         heritability_result = readLines(file_path)
         ind = grep('^Total Observed scale h2', heritability_result)
@@ -72,7 +69,7 @@ complete_results$observed_h2_se = sapply(studies, function(study) {
 })
 
 complete_results$lambda_gc = sapply(studies, function(study) {
-    file_path = paste0(heritability_results_path,"/",study,".log")
+    file_path = paste0(complete_results[which(complete_results$study_id == study),]$path,"/heritability/",study,".log")
     if (file.exists(file_path)) {
         heritability_result = readLines(file_path)
         ind = grep('^Lambda GC', heritability_result)
@@ -89,7 +86,7 @@ complete_results$lambda_gc = sapply(studies, function(study) {
 })
 
 complete_results$mean_chi2 = sapply(studies, function(study) {
-    file_path = paste0(heritability_results_path,"/",study,".log")
+    file_path = paste0(complete_results[which(complete_results$study_id == study),]$path,"/heritability/",study,".log")
     if (file.exists(file_path)) {
         heritability_result = readLines(file_path)
         ind = grep('^Mean Chi', heritability_result)
@@ -105,7 +102,7 @@ complete_results$mean_chi2 = sapply(studies, function(study) {
 })
 
 complete_results$intercept = sapply(studies, function(study) {
-    file_path = paste0(heritability_results_path,"/",study,".log")
+    file_path = paste0(complete_results[which(complete_results$study_id == study),]$path,"/heritability/",study,".log")
     if (file.exists(file_path)) {
         heritability_result = readLines(file_path)
         ind = grep('^Intercept', heritability_result)
@@ -121,7 +118,7 @@ complete_results$intercept = sapply(studies, function(study) {
 })
 
 complete_results$intercept_se = sapply(studies, function(study) {
-    file_path = paste0(heritability_results_path,"/",study,".log")
+    file_path = paste0(complete_results[which(complete_results$study_id == study),]$path,"/heritability/",study,".log")
     if (file.exists(file_path)) {
         heritability_result = readLines(file_path)
         ind = grep('^Intercept', heritability_result)
@@ -138,7 +135,7 @@ complete_results$intercept_se = sapply(studies, function(study) {
 })
 
 complete_results$ratio = sapply(studies, function(study) {
-    file_path = paste0(heritability_results_path,"/",study,".log")
+    file_path = paste0(complete_results[which(complete_results$study_id == study),]$path,"/heritability/",study,".log")
     if (file.exists(file_path)) {
         heritability_result = readLines(file_path)
         ind = grep('^Ratio', heritability_result)
@@ -156,7 +153,7 @@ complete_results$ratio = sapply(studies, function(study) {
 })
 
 complete_results$ratio_se = sapply(studies, function(study) {
-    file_path = paste0(heritability_results_path,"/",study,".log")
+    file_path = paste0(complete_results[which(complete_results$study_id == study),]$path,"/heritability/",study,".log")
     if (file.exists(file_path)) {
         heritability_result = readLines(file_path)
         ind = grep('^Ratio', heritability_result)
@@ -172,7 +169,7 @@ complete_results$ratio_se = sapply(studies, function(study) {
 })
 
 complete_results$snps_used = sapply(studies, function(study) {
-    file_path = paste0(heritability_results_path,"/",study,".log")
+    file_path = paste0(complete_results[which(complete_results$study_id == study),]$path,"/heritability/",study,".log")
     if (file.exists(file_path)) {
         heritability_result = readLines(file_path)
         ind = grep('^After merging with regression SNP LD', heritability_result)

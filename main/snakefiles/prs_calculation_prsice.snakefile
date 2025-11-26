@@ -2,16 +2,17 @@ import os
 import pandas as pd
 
 def studies_to_calculate():
-    csvFile = pd.read_csv(config["studies_to_calculate"], sep='\t', engine='python')
+    csvFile = pd.read_csv(config["studies_to_calculate"], sep='\t', engine='python').set_index("study_id")
     csvFile.dropna(subset=['genetic_correlation_passed'], inplace=True)
     csvFile = csvFile[csvFile['genetic_correlation_passed'] == True]
-    return csvFile['study_id']
+    return csvFile
 
-def get_path(st):
-    csvFile = pd.read_csv(config["studies_to_calculate"], sep='\t', engine='python')
-    index_of_st = csvFile["study_id"].tolist().index(str(st))
-    sample_sizes = csvFile["path"].tolist()
-    return str(sample_sizes[index_of_st])
+def studies_to_calculate_list():
+    return list(studies_to_calculate().index)
+
+def get_path(wildcards):
+    csvFile = studies_to_calculate()
+    return str(csvFile.loc[wildcards.study].path)
 
 rule all:
     input:
@@ -30,7 +31,7 @@ rule calculate_PRS:
     shell:
         """
         PRSice \
-        --base {params.sumstat}/{wildcards.study}.qced.h.tsv.gz \
+        --base {params.sumstat}/qced/{wildcards.study}.qced.h.tsv.gz \
         --snp VARID \
         --no-default \
         --chr CHR \
@@ -56,7 +57,7 @@ rule calculate_PRS:
 
 rule create_pgs_data_table:
     input:
-        expand(config['results_path']+'/'+config['results_directory_name']+'/{study}.all_score' , study = studies_to_calculate())
+        expand(config['results_path']+'/'+config['results_directory_name']+'/{study}.all_score' , study = studies_to_calculate_list())
     conda: "../environment.yaml"
     output:
         config['results_path']+'/'+config['results_directory_name']+'/'+config['results_data_table_name'] + '_' + str(config['min_number_of_snps_included']) + '.tsv'

@@ -7,22 +7,29 @@ if ldpred_path is None:
     ldpred_path = config["repository"] + "/tools/ldpred2"
 
 def studies_to_calculate():
-    csvFile = pd.read_csv(config["studies_to_calculate_ldpred"], sep='\t', engine='python')
+    csvFile = pd.read_csv(config["studies_to_calculate_ldpred"], sep='\t', engine='python').set_index("study_id")
     csvFile.dropna(subset=['genetic_correlation_passed'], inplace=True)
     csvFile = csvFile[csvFile['genetic_correlation_passed'] == True]
-    return csvFile['study_id']
+    return csvFile
 
-def get_path(st):
-    csvFile = pd.read_csv(config["studies_to_calculate_ldpred"], sep='\t', engine='python')
-    index_of_st = csvFile["study_id"].tolist().index(str(st))
-    sample_sizes = csvFile["path"].tolist()
-    return str(sample_sizes[index_of_st])
+def studies_to_calculate_list():
+    return list(studies_to_calculate().index)
 
-def get_effective_sample_size(st):
-    csvFile = pd.read_csv(config["studies_to_calculate_ldpred"], sep='\t', engine='python')
-    index_of_st = csvFile["study_id"].tolist().index(str(st))
-    sample_sizes = csvFile["neff"].tolist()
-    return float(sample_sizes[index_of_st])
+def get_path(wildcards):
+    csvFile = studies_to_calculate()
+    return str(csvFile.loc[wildcards.study].path)
+
+def get_effective_sample_size(wildcards):
+    csvFile = studies_to_calculate()
+    return float(csvFile.loc[wildcards.study].neff)
+
+def get_path_all():
+    csvFile = studies_to_calculate()
+    parent_path = list()
+    for i in list(csvFile.index):
+        p = csvFile.loc[i].path
+        parent_path.append(str(p))
+    return parent_path
 
 rule all:
     input:
@@ -57,7 +64,7 @@ rule calculate_LDSC:
     input:
         rds = config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.' + config['imputation_mode'] + '.nomiss.rds'
     output:
-        config['results_path_ldpred']+'/'+config['results_directory_name_ldpred'] + '/{study}' + '.' + config['mode']
+        '{get_path_}' + '/ldpred_score/{study}' + '.' + config['mode']
     params:
         gwas = get_path,
         neff = get_effective_sample_size
@@ -72,8 +79,8 @@ rule calculate_LDSC:
             --col-stat BETA \
             --col-stat-se SE \
             --stat-type BETA \
-            --sumstats {params.gwas}/{wildcards.study}.qced.h.tsv.gz \
-            --out {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/{wildcards.study}.{config[mode]} \
+            --sumstats {params.gwas}/ldpred/{wildcards.study}.qced.h.tsv.gz \
+            --out {wildcards.get_path_}/ldpred_score/{wildcards.study}.{config[mode]} \
             --cores 5 \
             --genomic-build hg38 \
             --name-score {wildcards.study} \
@@ -81,7 +88,8 @@ rule calculate_LDSC:
             --col-bp BP \
             --col-A1 A1 \
             --col-A2 A2 \
-            --col-snp-id VARID \
+            --merge-by-rsid \ 
+            --col-snp-id SNP \
             --col-chr CHR \
             --ld-meta-file {config[ldpred2_ref]}/map_hm3_plus.rds  \
             --ld-file {config[ldpred2_ref]}/ldref_hm3_plus/LD_with_blocks_chr@.rds \
@@ -93,9 +101,9 @@ rule calculate_LDSC:
 
 rule create_pgs_data_table:
     input:
-        expand(config['results_path_ldpred']+'/'+config['results_directory_name_ldpred']+'/{study}'+ '.' + config['mode'] , study = studies_to_calculate())
+        expand('{get_path_}' + '/ldpred_score/{study}' + '.' + config['mode'], zip , study = studies_to_calculate_list(), get_path_ = get_path_all())
     output:
-        config['results_path_ldpred']+'/'+config['results_directory_name_ldpred']+'/'+config['results_data_table_name_ldpred']+'.tsv'
+        config['results_path_ldpred'] + '/' + config['results_directory_name_ldpred'] + '/' + config['results_data_table_name_ldpred'] + '.tsv'
     conda: "../environment.yaml"
     shell:
         """

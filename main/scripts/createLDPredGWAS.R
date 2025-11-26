@@ -39,11 +39,11 @@ foreach(i=c(1:nrow(gwas_table))) %dopar% {
   
   ss <- snp_match(ss, map_ldref)
   
-  sd_ldref <- with(ss, sqrt(2*maf*(1 - maf)))
-  sd_ss <- with(ss, 2 / sqrt(neff * se^2 + beta^2))
+  #sd_ldref <- with(ss, sqrt(2*maf*(1 - maf)))
+  #sd_ss <- with(ss, 2 / sqrt(neff * se^2 + beta^2))
   
-  is_bad <- sd_ss < (0.5 * sd_ldref) | sd_ss > (sd_ldref + 0.1) | sd_ss < 0.05 | sd_ldref < 0.05
-  ss <- ss[!is_bad, ]
+  #is_bad <- sd_ss < (0.5 * sd_ldref) | sd_ss > (sd_ldref + 0.1) | sd_ss < 0.05 | sd_ldref < 0.05
+  #ss <- ss[!is_bad, ]
   ss <- ss[ , c("varid","snp","chr","pos","a1","a0","p","maf","beta","or","se","n","neff")] 
   colnames(ss)[colnames(ss) == "a0"] = "a2"
   colnames(ss)[colnames(ss) == "pos"] = "bp"

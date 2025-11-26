@@ -6,7 +6,7 @@ suppressMessages(library(optparse))
 suppressMessages(library(dplyr))
 suppressMessages(library(gwasrapidd))
 suppressMessages(library(bigsnpr))
-
+suppressMessages(library(stats))
 args = commandArgs(trailingOnly=TRUE)
 
 input <- args[1]
@@ -15,7 +15,6 @@ maf_file <- args[3]
 N = as.numeric(args[4])
 output_other_files = args[5]
 NEFF = args[6]
-genome_build = args[7]
 
 base <- fread(input, showProgress = FALSE, data.table = F)
 
@@ -131,13 +130,8 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   base$VARID <- str_c(base$CHR, ":", base$BP)
 
   if(dim(base)[1] != 0 ) {
-    if(genome_build == "hg38") {
-      maf = as.data.frame(fread(maf_file, select = c("SNP","MAF_hg38"), showProgress = FALSE))
-      colnames(maf)[colnames(maf) == "MAF_hg38"] = "MAF"
-    } else if(genome_build == "hg37") {
-      maf = as.data.frame(fread(maf_file_hg37, select = c("SNP","MAF_hg37"), showProgress = FALSE))
-      colnames(maf)[colnames(maf) == "MAF_hg37"] = "MAF"
-    }
+    maf = as.data.frame(fread(maf_file, select = c("SNP","MAF_hg38"), showProgress = FALSE))
+    colnames(maf)[colnames(maf) == "MAF_hg38"] = "MAF"
     matches = match(base$SNP,maf$SNP)
     matches_na = which(is.na(matches))
     matches_not_na = which(!is.na(matches))
@@ -249,11 +243,11 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
     problematic_CHR = TRUE
   }
 
-  dfx = data.frame(matrix(ncol = 14, nrow = 1))
+  dfx = data.frame(matrix(ncol = 15, nrow = 1))
   colnames(dfx) <- c("problematic_N", "problematic_p_value", "problematic_beta","problematic_beta_reason", "problematic_MAF_match", "hm_readed","snpcount",
-                                  "z_score_converted", "problematic_SE", "problematic_CHR","snpcount_in_raw_file","columns_dropped","columns_before","columns_after")
+                                  "z_score_converted", "problematic_SE", "problematic_CHR","snpcount_in_raw_file","columns_dropped","columns_before","columns_after","ld_pred_failed")
 
-  dfx[1,]= c(problematic_N,problematic_p_value, problematic_beta,beta_reason,problematic_MAF_match,hm_readed ,dim(base)[1], z_score_studies,problematic_SE,problematic_CHR,snpcount_before,columns_dropped,paste0(columns_before,collapse = ","),paste0(columns_after,collapse = ","))
+  dfx[1,]= c(problematic_N,problematic_p_value, problematic_beta,beta_reason,problematic_MAF_match,hm_readed ,dim(base)[1], z_score_studies,problematic_SE,problematic_CHR,snpcount_before,columns_dropped,paste0(columns_before,collapse = ","),paste0(columns_after,collapse = ","),FALSE)
 
   write.table(dfx,paste0(output_other_files,".metadata.tsv"), quote = F, sep = "\t", col.names = T, row.names = F)
 
@@ -268,11 +262,11 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   writeLines(as.character(warnings()),paste0(output_other_files,".warnings"))
 } else {
 
-  dfx = data.frame(matrix(ncol = 14, nrow = 1))
+  dfx = data.frame(matrix(ncol = 15, nrow = 1))
   colnames(dfx) <- c("problematic_N", "problematic_p_value", "problematic_beta","problematic_beta_reason", "problematic_MAF_match", "hm_readed","snpcount",
-                                "z_score_converted", "problematic_SE", "problematic_CHR","snpcount_in_raw_file","columns_dropped","columns_before","columns_after")
+                                "z_score_converted", "problematic_SE", "problematic_CHR","snpcount_in_raw_file","columns_dropped","columns_before","columns_after","ld_pred_failed")
 
-  dfx[1,]= c(FALSE,FALSE, problematic_beta,beta_reason,FALSE,hm_readed ,dim(base)[1], FALSE,FALSE,problematic_CHR,snpcount_before,columns_dropped,paste0(columns_before,collapse = ","),paste0(columns_after,collapse = ","))
+  dfx[1,]= c(FALSE,FALSE, problematic_beta,beta_reason,FALSE,hm_readed ,dim(base)[1], FALSE,FALSE,problematic_CHR,snpcount_before,columns_dropped,paste0(columns_before,collapse = ","),paste0(columns_after,collapse = ","),FALSE)
 
   write.table(dfx,paste0(output_other_files,".metadata.tsv"), quote = F, sep = "\t", col.names = T, row.names = F)
 

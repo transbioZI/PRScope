@@ -7,10 +7,9 @@ suppressMessages(library(data.table))
 suppressMessages(library(plyr))
 
 args = commandArgs(trailingOnly=TRUE)
-genetic_cor_results =  args[1]
-genetic_cor_study_list = args[2]
-rg_max = as.numeric(args[3])
-output_genetic_correlation_gwas_list = args[4]
+genetic_cor_study_list = args[1]
+rg_max = as.numeric(args[2])
+output_genetic_correlation_gwas_list = args[3]
 
 st_df = fread(genetic_cor_study_list)
 st_df = st_df[st_df$heritability_passed == TRUE, ]
@@ -18,13 +17,14 @@ st_list = st_df$study_id
 df_list = list()
 
 for(studi in st_list[-length(st_list)]) {
-  current_file_read = readLines(paste0(genetic_cor_results,"/",studi,".log"))
+  genetic_cor_results = st_df[which(st_df$study_id == studi),]$path
+  current_file_read = readLines(paste0(genetic_cor_results,"/genetic_correlation/",studi,".log"))
   ind_start = grep('^Summary of Genetic Correlation Results', current_file_read)+1
   ind_end = grep('^Analysis finished', current_file_read)-2
 
   rf_to_df = current_file_read[ind_start:ind_end]
-  writeLines(rf_to_df, paste0(genetic_cor_results,"/",studi,".result.log"))
-  df = fread(paste0(genetic_cor_results,"/",studi,".result.log"))
+  writeLines(rf_to_df, paste0(genetic_cor_results,"/genetic_correlation/",studi,".result.log"))
+  df = fread(paste0(genetic_cor_results,"/genetic_correlation/",studi,".result.log"))
 
   df$p1 = unlist(sapply(sapply(df$p1,basename),function(x) {
     str_split(x,"\\.")[[1]][1]

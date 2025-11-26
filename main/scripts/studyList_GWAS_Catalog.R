@@ -14,10 +14,10 @@ studies = unique(readLines(input))
 if(length(studies) != 0) {
 studies_read = get_studies(study_id = studies)
 
-complete_results = data.frame(matrix(ncol = 15, nrow = length(studies)))
+complete_results = data.frame(matrix(ncol = 16, nrow = length(studies)))
 
 colnames(complete_results) <- c('study_id', 'efo_trait', 'reported_trait', "initial_sample", "replication_sample","snp_count",
-                                "publication_date","pubmed_id","title","publication", "sample_size", "number_of_cases","number_of_controls", "countries_of_recruitment","neff","genome_build")
+                                "publication_date","pubmed_id","title","publication", "sample_size", "number_of_cases","number_of_controls", "countries_of_recruitment","neff","genome_build","path")
 
 complete_results$study_id = studies
 
@@ -101,10 +101,10 @@ complete_results$genome_build = "hg38"
 write.table(apply(complete_results,2,as.character),output, quote = F,col.names = T, row.names = F, sep = "\t")
 } else {
 
-complete_results = data.frame(matrix(ncol = 15, nrow = 0))
+complete_results = data.frame(matrix(ncol = 16, nrow = 0))
 
 colnames(complete_results) <- c('study_id', 'efo_trait', 'reported_trait', "initial_sample", "replication_sample","snp_count",
-                                "publication_date","pubmed_id","title","publication", "sample_size", "number_of_cases","number_of_controls", "countries_of_recruitment","neff")
+                                "publication_date","pubmed_id","title","publication", "sample_size", "number_of_cases","number_of_controls", "countries_of_recruitment","neff","path")
 write.table(apply(complete_results,2,as.character),output, quote = F,col.names = T, row.names = F, sep = "\t")
 
 }

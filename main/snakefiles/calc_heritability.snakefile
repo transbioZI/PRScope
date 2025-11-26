@@ -7,24 +7,27 @@ if ldsc_path is None:
     ldsc_path = config["repository"] + "/tools/ldsc"
 
 def studies_to_calculate():
-    csvFile = pandas.read_csv(config["study_list_for_heritability"], sep='\t', engine='python')
+    csvFile = pandas.read_csv(config["study_list_for_heritability"], sep='\t', engine='python').set_index("study_id")
     csvFile.dropna(subset=['sample_size'], inplace=True)
     csvFile["sample_size"] = csvFile['sample_size'].astype('int')
-    csvFile = csvFile[csvFile['qc_passed'] == True]
+    csvFile = csvFile[csvFile['qc_passed_ldpred'] == True]
     csvFile = csvFile[csvFile['sample_size'] > 0]
-    return csvFile["study_id"].tolist()
+    return csvFile
 
-def get_sample_size(st):
-    csvFile = pandas.read_csv(config["study_list_for_heritability"], sep='\t', engine='python')
-    index_of_st = csvFile["study_id"].tolist().index(str(st))
-    sample_sizes = csvFile["sample_size"].tolist()
-    return int(sample_sizes[index_of_st])
+def studies_to_calculate_list():
+    return list(studies_to_calculate().index)
 
-def get_path(st):
-    csvFile = pandas.read_csv(config["study_list_for_heritability"], sep='\t', engine='python')
-    index_of_st = csvFile["study_id"].tolist().index(str(st))
-    sample_sizes = csvFile["path"].tolist()
-    return str(sample_sizes[index_of_st])
+def get_path():
+    csvFile = studies_to_calculate()
+    parent_path = list()
+    for i in list(csvFile.index):
+        p = csvFile.loc[i].path
+        parent_path.append(str(p))
+    return parent_path
+
+def get_genome_build(wildcards):
+    csvFile = studies_to_calculate()
+    return str(csvFile.loc[str(wildcards.study)].genome_build)
 
 rule all:
     input:
@@ -33,12 +36,16 @@ rule all:
 rule munge_study:
     conda: "../environment_for_ldsc.yaml"
     output:
-        config['gwas_data_path_heritability'] + "/{study}/munged/{study}.sumstats.gz"
+        "{study_path}" + "/munged/{study}.sumstats.gz"
     params:
-        study_path = get_path
+        genome = get_genome_build
     shell:
         """
-        python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {params.study_path}/{wildcards.study}.qced.h.tsv.gz --N-col N --out {config[gwas_data_path_heritability]}/{wildcards.study}/munged/{wildcards.study} --merge-alleles {config[hm3_path]} --ignore VARID,OR,EAF,Z_SCORE,SE,NEFF
+        if [[ {params.genome}   == "hg38" ]]; then
+            python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {wildcards.study_path}/ldpred/{wildcards.study}.qced.h.tsv.gz --N-col N --out {wildcards.study_path}/munged/{wildcards.study} --merge-alleles {config[hm3_path_hg38]} --ignore VARID,OR,EAF,Z_SCORE,SE,NEFF
+        else
+            python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {wildcards.study_path}/ldpred/{wildcards.study}.qced.h.tsv.gz --N-col N --out {wildcards.study_path}/munged/{wildcards.study} --merge-alleles {config[hm3_path_hg37]} --ignore VARID,OR,EAF,Z_SCORE,SE,NEFF
+        fi
         """
 
 rule calculate_heritability:
@@ -46,15 +53,21 @@ rule calculate_heritability:
         rules.munge_study.output
     conda: "../environment_for_ldsc.yaml"
     output:
-        config['output_path_heritability'] + "/{study}.log"
+        "{study_path}"+"/heritability/{study}.log"
+    params:
+        genome = get_genome_build
     shell:
         """
-        python2 {ldsc_path}/ldsc.py --h2 {config[gwas_data_path_heritability]}/{wildcards.study}/munged/{wildcards.study}.sumstats.gz --ref-ld-chr {config[ld_ref]}/ --w-ld-chr {config[ld_ref]}/ --out {config[output_path_heritability]}/{wildcards.study}
+        if [[ {params.genome}   == "hg38" ]]; then
+            python2 {ldsc_path}/ldsc.py --h2 {wildcards.study_path}/munged/{wildcards.study}.sumstats.gz --ref-ld-chr {config[ld_ref_hg38]}/ --w-ld-chr {config[ld_ref_hg38]}/ --out {wildcards.study_path}/heritability/{wildcards.study}
+        else
+            python2 {ldsc_path}/ldsc.py --h2 {wildcards.study_path}/munged/{wildcards.study}.sumstats.gz --ref-ld-chr {config[ld_ref_hg37]}/ --w-ld-chr {config[ld_ref_hg37]}/ --out {wildcards.study_path}/heritability/{wildcards.study}
+        fi
         """
 
 rule filter_heritability:
     input:
-        expand(config['output_path_heritability'] + "/{study}.log", study = studies_to_calculate())
+        expand("{study_path}" + "/heritability/{study}.log", zip, study = studies_to_calculate_list(), study_path = get_path())
     conda: "../environment_for_ldsc.yaml"
     output:
         config['output_heritability_gwas_list'] + ".heritability.tsv"
@@ -62,5 +75,5 @@ rule filter_heritability:
         script = config['repository'] + "/scripts/filter_by_heritability.R"
     shell:
         """
-        Rscript {params.script} {config[output_path_heritability]} {config[study_list_for_heritability]} {config[heritability_min_zscore]} {config[output_path_heritability]} {config[gwas_data_path_heritability]} {config[output_heritability_gwas_list]}
+        Rscript {params.script} {config[study_list_for_heritability]} {config[heritability_min_zscore]} {config[output_heritability_gwas_list]}
         """
