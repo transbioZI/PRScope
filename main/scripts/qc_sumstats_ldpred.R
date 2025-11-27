@@ -48,6 +48,7 @@ if(all(c(problematic_N, problematic_p_value, problematic_beta, problematic_MAF_m
     if(dim(base)[1] == 0) {
       res$ld_pred_failed = TRUE
     } else {
+      res$ld_pred_failed = FALSE
       base <- base[ , c("varid","snp","chr","pos","a1","a0","p","maf","beta","or","se","n","neff")]
       colnames(base)[colnames(base) == "a0"] = "a2"
       colnames(base)[colnames(base) == "pos"] = "bp"

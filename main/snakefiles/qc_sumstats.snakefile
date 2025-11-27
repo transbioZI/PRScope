@@ -26,10 +26,8 @@ def get_genome_build(wildcards):
     csvFile = studies_to_calculate()
     return str(csvFile.loc[wildcards.study].genome_build)
 
-def get_path():
-    studies = list(studies_harmonised().keys())
+def get_path_all():
     csvFile = studies_to_calculate()
-    csvFile = csvFile.loc[studies]
     parent_path = list()
     for i in list(csvFile.index):
         p = csvFile.loc[i].path
@@ -38,6 +36,14 @@ def get_path():
         else:
             parent_path.append(str(p))
     return parent_path
+
+def get_gwas_to_qc(wildcards):
+    csvFile = studies_to_calculate()
+    p = csvFile.loc[wildcards.study].path
+    if pandas.isnull(p):
+        return str(config["output_path_qced_gwas"] + "/" + wildcards.study + "/" + wildcards.study + ".to_qc.h.tsv")
+    else:
+        return csvFile.loc[wildcards.study].path_to_qc
 
 def read_harmonised_list():
     os.system("mkdir -p " + config['output_path_qced_gwas'])
@@ -58,18 +64,23 @@ def studies_harmonised():
     intersection = list(set(study_download_link.keys()) & set(stds))
     return {key: study_download_link[key] for key in intersection}
 
-def get_link(wildcards):
-    studies = studies_harmonised()
-    return "http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/"+ studies[wildcards.study][2:]
+studies = studies_harmonised()
+
+def get_link(wildcards):    
+    keys = list(studies.keys())
+    if wildcards.study in keys:
+        return "http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/"+ studies[wildcards.study][2:]
+    else:
+        return "downloaded"
 
 def get_link_md5sum(wildcards):
-    studies = studies_harmonised()
-    link1 = "http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/"+ studies[wildcards.study][2:]
-    md5sum = os.path.dirname(link1) + "/md5sum.txt"
-    return md5sum
-
-def get_keys():
-    return list(studies_harmonised().keys())
+    keys = list(studies.keys())
+    if wildcards.study in keys:
+        link1 = "http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/"+ studies[wildcards.study][2:]
+        md5sum = os.path.dirname(link1) + "/md5sum.txt"
+        return md5sum
+    else:
+        return "downloaded"
 
 rule all:
     input:
@@ -85,7 +96,11 @@ rule download_study:
         download_done = "{path_qc}" + "/raw/{study}.download.done"
     shell:
         """
-        wget {params.link} -O {params.output_inprogress} --retry-connrefused --tries=10 && md5sum {params.output_inprogress} > {params.md5sum_download} && touch {params.download_done}
+        if [[ {params.link} == "downloaded" ]]; then
+            touch {params.md5sum_download} && touch {params.download_done} 
+        else
+            wget {params.link} -O {params.output_inprogress} --retry-connrefused --tries=10 && md5sum {params.output_inprogress} > {params.md5sum_download} && touch {params.download_done}
+        fi
         """
 
 rule download_md5sum:
@@ -96,7 +111,11 @@ rule download_md5sum:
         md5sum_real = "{path_qc}" + "/raw/{study}_md5sum_real.txt"
     shell:
         """
-        wget --spider --force-html -i {params.md5sum} && wget {params.md5sum} -O {params.md5sum_real} --retry-connrefused --tries=10 || touch {params.md5sum_real}
+        if [[ {params.md5sum}  == "downloaded" ]]; then
+            touch {params.md5sum_real}
+        else
+            wget --spider --force-html -i {params.md5sum} && wget {params.md5sum} -O {params.md5sum_real} --retry-connrefused --tries=10 || touch {params.md5sum_real}
+        fi
         """
 
 rule gzip_study:
@@ -105,12 +124,17 @@ rule gzip_study:
     output:
         "{path_qc}" + "/{study}.gzip.done"
     params:
+        link = get_link,
         output_inprogress = "{path_qc}" +"/raw"+ "/{study}.h.tsv.gz",
         output_done = "{path_qc}" + "/{study}.to_qc.h.tsv",
         output_done_file = "{path_qc}" + "/{study}.gzip.done"
     shell:
         """
-        gzip -dkc {params.output_inprogress}  > {params.output_done} && touch {params.output_done_file}
+        if [[ {params.link} == "downloaded" ]]; then
+            touch {params.output_done_file}
+        else
+            gzip -dkc {params.output_inprogress}  > {params.output_done} && touch {params.output_done_file}
+        fi
         """
 
 rule qc_gwas:
@@ -120,17 +144,22 @@ rule qc_gwas:
     output:
         "{path_qc}" + "/qced/{study}.qced.done"
     params:
+        link = get_link,
         script = config['repository'] + "/scripts/qc_sumstats.R",
         maf_file = config['maf_file'],
         N = get_sample_size,
         Neff = get_neff,
         otput_other = "{path_qc}" + "/qced/{study}",
-        inp = "{path_qc}"  + "/{study}.to_qc.h.tsv",
+        inp = get_gwas_to_qc,
         qc_done = "{path_qc}"  + "/qced/{study}.qced.done",
         out_p = "{path_qc}" + "/qced/{study}.qced.h.tsv.gz"
     shell:
         """
-        Rscript {params.script} {params.inp} {params.out_p} {params.maf_file} {params.N} {params.otput_other} {params.Neff} && rm {params.inp} && touch {params.qc_done}
+        if [[ {params.link} == "downloaded" ]]; then
+            Rscript {params.script} {params.inp} {params.out_p} {params.maf_file} {params.N} {params.otput_other} {params.Neff} && touch {params.qc_done}
+        else
+            Rscript {params.script} {params.inp} {params.out_p} {params.maf_file} {params.N} {params.otput_other} {params.Neff} && rm {params.inp} && touch {params.qc_done}
+        fi
         """
 
 rule qc_gwas_ldpred:
@@ -153,9 +182,9 @@ rule qc_gwas_ldpred:
 
 rule create_studies_metadata:
     input:
-        expand("{path_qc}"  + "/qced/{study}.qced.done",zip, study = get_keys(), path_qc=get_path()),
-        expand("{path_qc}"  + "/ldpred/{study}.qced.done",zip, study = get_keys(), path_qc=get_path()),
-        expand("{path_qc}"  + "/raw/{study}_md5sum_real.txt",zip, study = get_keys(), path_qc=get_path())
+        expand("{path_qc}"  + "/qced/{study}.qced.done",zip, study = studies_to_calculate_list(), path_qc=get_path_all()),
+        expand("{path_qc}"  + "/ldpred/{study}.qced.done",zip, study = studies_to_calculate_list(), path_qc=get_path_all()),
+        expand("{path_qc}"  + "/raw/{study}_md5sum_real.txt",zip, study = studies_to_calculate_list(), path_qc=get_path_all())
     conda: "../environment.yaml"
     output:
         config['output_qc_gwas_list']+".qced.tsv"

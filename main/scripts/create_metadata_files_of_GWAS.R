@@ -33,24 +33,35 @@ if(length(studies) != 0) {
   metadata_list = list()
   for(f in studies) {
     ai = which(f == studies)
-    if(is.na(paths[ai]) | length(paths[ai]) == 0 ) {
+    if(is.na(paths[ai]) | length(paths[ai]) == 0 | paths[ai] == "") {
       path_ss = paste0(path_to_sumstats,"/",f)
     } else {
       path_ss = paths[ai]
     }
+    
     res = fread(paste0(path_ss,"/qced/",f,".metadata.tsv"))
 
     colnames(res) = c("N_failed", "P_failed", "BETA_failed","BETA_failed_reason", "MAF_matching_failed", "HM_prefix_readed","SNP_count_after_QC",
                                 "BETA_is_Z_SCORE", "SE_failed", "CHR_failed","SNP_count_before_QC","duplicate_columns_dropped","columns_before_QC","columns_after_QC","ld_pred_failed")
 
     md1 = readLines(paste0(path_ss,"/raw/",f,"_md5sum_download.txt"))
-    md1 = str_split(md1[1],"\\s+")[[1]][1]
+    
+    if( length(md1) != 0 ){
+      md1 = str_split(md1[1],"\\s+")[[1]][1]
+    } else{
+      md1 = "unknown_"
+    } 
+
     if(file.exists(paste0(path_ss,"/raw/",f,"_md5sum_real.txt"))) {
     	md2 = readLines(paste0(path_ss,"/raw/",f,"_md5sum_real.txt"))
-    	md2 = md2[grepl("*.h.tsv.gz$",md2)]
-    	md2 = str_split(md2[1],"\\s+")[[1]][1]
+    	if( length(md2) != 0 ){
+        md2 = md2[grepl("*.h.tsv.gz$",md2)]
+    	  md2 = str_split(md2[1],"\\s+")[[1]][1]
+      } else{
+        md2 = "_unknown"
+      } 
     } else {
-    	md2 = "unknown"
+    	md2 = "_unknown"
     }
 
     res$md5sum_download = md1
