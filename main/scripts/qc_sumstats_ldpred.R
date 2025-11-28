@@ -14,6 +14,7 @@ ldpred_output = args[2]
 ldpred_ref = args[3]
 genome_build = args[4]
 metadata = args[5]
+snps_list = args[6]
 
 map_ldref = readRDS(ldpred_ref)
 
@@ -24,6 +25,7 @@ if(genome_build=="hg38") {
 
 base <- fread(input, showProgress = FALSE, data.table = F)
 res = fread(metadata, showProgress = FALSE, data.table = F)
+snps = readLines(snps_list)
 
 problematic_N = !as.logical(res$problematic_N)
 problematic_p_value = !as.logical(res$problematic_p_value)
@@ -37,7 +39,7 @@ if(all(c(problematic_N, problematic_p_value, problematic_beta, problematic_MAF_m
     colnames(base) = tolower(colnames(base))
     colnames(base)[colnames(base) == "a2"] = "a0"
     colnames(base)[colnames(base) == "bp"] = "pos"
-
+    base_other = base[which(base$snp %in% snps),]
     base = tryCatch({
       snp_match(base, map_ldref)
     }, error = function(err) {
@@ -49,7 +51,12 @@ if(all(c(problematic_N, problematic_p_value, problematic_beta, problematic_MAF_m
       res$ld_pred_failed = TRUE
     } else {
       res$ld_pred_failed = FALSE
-      base <- base[ , c("varid","snp","chr","pos","a1","a0","p","maf","beta","or","se","n","neff")]
+      columns = c("varid","snp","chr","pos","a1","a0","p","maf","beta","or","se","n")
+      base <- base[ , columns]
+      if(dim(base_other)[1] != 0) {
+        base_other = base_other[,columns]
+      }
+      base = rbind(base,base_other)
       colnames(base)[colnames(base) == "a0"] = "a2"
       colnames(base)[colnames(base) == "pos"] = "bp"
       colnames(base) = toupper(colnames(base))

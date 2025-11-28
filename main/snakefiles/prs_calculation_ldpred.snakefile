@@ -33,7 +33,7 @@ def get_path_all():
 
 rule all:
     input:
-        config['results_path_ldpred']+'/'+config['results_directory_name_ldpred']+'/'+config['results_data_table_name_ldpred']+'.tsv'
+        config['results_path_ldpred']+'.tsv'
 
 rule convert_plink_file_rds:
     input:
@@ -71,9 +71,9 @@ rule calculate_LDSC:
     conda: "../environment.yaml"
     shell:
         """
-        mkdir -p {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}
-        mkdir -p {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp
-        mkdir -p {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study}
+        mkdir -p {wildcards.get_path_}/ldpred_score
+        mkdir -p {wildcards.get_path_}/ldpred_score/tmp
+        mkdir -p {wildcards.get_path_}/ldpred_score/tmp/{wildcards.study}
         Rscript {ldpred_path}/ldpred2.R \
             --ldpred-mode {config[mode]} \
             --col-stat BETA \
@@ -95,17 +95,17 @@ rule calculate_LDSC:
             --ld-file {config[ldpred2_ref]}/ldref_hm3_plus/LD_with_blocks_chr@.rds \
             --geno-file-rds {input.rds} \
             --effective-sample-size {params.neff} \
-            --tmp-dir {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study}
-        rm -f -r {config[results_path_ldpred]}/{config[results_directory_name_ldpred]}/tmp/{wildcards.study}
+            --tmp-dir {wildcards.get_path_}/ldpred_score/tmp/{wildcards.study}
+        rm -f -r {wildcards.get_path_}/ldpred_score/tmp/{wildcards.study}
         """
 
 rule create_pgs_data_table:
     input:
         expand('{get_path_}' + '/ldpred_score/{study}' + '.' + config['mode'], zip , study = studies_to_calculate_list(), get_path_ = get_path_all())
     output:
-        config['results_path_ldpred'] + '/' + config['results_directory_name_ldpred'] + '/' + config['results_data_table_name_ldpred'] + '.tsv'
+        config['results_path_ldpred'] + '.tsv'
     conda: "../environment.yaml"
     shell:
         """
-        Rscript {config[repository]}/scripts/create_prs_datatable_ldpred.R {config[results_path_ldpred]}/{config[results_directory_name_ldpred]} {config[mode]} {config[studies_to_calculate_ldpred]} {config[intercept_max]} {config[intercept_min]} {config[heritability]} {config[results_data_table_name_ldpred]}
+        Rscript {config[repository]}/scripts/create_prs_datatable_ldpred.R {config[results_path_ldpred]} {config[mode]} {config[studies_to_calculate_ldpred]}
         """

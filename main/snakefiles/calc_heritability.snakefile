@@ -41,7 +41,7 @@ rule munge_study:
         genome = get_genome_build
     shell:
         """
-        if [[ {params.genome}   == "hg38" ]]; then
+        if [[ {params.genome}  == "hg38" ]]; then
             python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {wildcards.study_path}/ldpred/{wildcards.study}.qced.h.tsv.gz --N-col N --out {wildcards.study_path}/munged/{wildcards.study} --merge-alleles {config[hm3_path_hg38]} --ignore VARID,OR,EAF,Z_SCORE,SE,NEFF
         else
             python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {wildcards.study_path}/ldpred/{wildcards.study}.qced.h.tsv.gz --N-col N --out {wildcards.study_path}/munged/{wildcards.study} --merge-alleles {config[hm3_path_hg37]} --ignore VARID,OR,EAF,Z_SCORE,SE,NEFF
@@ -58,7 +58,7 @@ rule calculate_heritability:
         genome = get_genome_build
     shell:
         """
-        if [[ {params.genome}   == "hg38" ]]; then
+        if [[ {params.genome}  == "hg38" ]]; then
             python2 {ldsc_path}/ldsc.py --h2 {wildcards.study_path}/munged/{wildcards.study}.sumstats.gz --ref-ld-chr {config[ld_ref_hg38]}/ --w-ld-chr {config[ld_ref_hg38]}/ --out {wildcards.study_path}/heritability/{wildcards.study}
         else
             python2 {ldsc_path}/ldsc.py --h2 {wildcards.study_path}/munged/{wildcards.study}.sumstats.gz --ref-ld-chr {config[ld_ref_hg37]}/ --w-ld-chr {config[ld_ref_hg37]}/ --out {wildcards.study_path}/heritability/{wildcards.study}

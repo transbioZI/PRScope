@@ -177,7 +177,7 @@ rule qc_gwas_ldpred:
         genome_build = get_genome_build
     shell:
         """
-        Rscript {params.script} {params.inp} {params.out_p} {config[ldpred2_ref]}/map_hm3_plus.rds {params.genome_build} {params.metadata} && touch {params.qc_done}
+        Rscript {params.script} {params.inp} {params.out_p} {config[ldpred2_ref]}/map_hm3_plus.rds {params.genome_build} {params.metadata} {config[ldpred2_ref]}/heritability_calculation_snps.txt && touch {params.qc_done}
         """
 
 rule create_studies_metadata:
