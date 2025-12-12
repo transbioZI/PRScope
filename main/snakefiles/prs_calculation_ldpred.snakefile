@@ -23,17 +23,9 @@ def get_effective_sample_size(wildcards):
     csvFile = studies_to_calculate()
     return float(csvFile.loc[wildcards.study].neff)
 
-def get_path_all():
-    csvFile = studies_to_calculate()
-    parent_path = list()
-    for i in list(csvFile.index):
-        p = csvFile.loc[i].path
-        parent_path.append(str(p))
-    return parent_path
-
 rule all:
     input:
-        config['results_path_ldpred']+'.tsv'
+        config['results_path_ldpred'] + '/results' + '.tsv'
 
 rule convert_plink_file_rds:
     input:
@@ -64,23 +56,23 @@ rule calculate_LDSC:
     input:
         rds = config['target_data_path_ldpred'] + "/" + config['target_data_prefix_ldpred'] + '.' + config['imputation_mode'] + '.nomiss.rds'
     output:
-        '{get_path_}' + '/ldpred_score/{study}' + '.' + config['mode']
+        config['results_path_ldpred'] + '/{study}' + '.' + config['mode']
     params:
         gwas = get_path,
         neff = get_effective_sample_size
     conda: "../environment.yaml"
     shell:
         """
-        mkdir -p {wildcards.get_path_}/ldpred_score
-        mkdir -p {wildcards.get_path_}/ldpred_score/tmp
-        mkdir -p {wildcards.get_path_}/ldpred_score/tmp/{wildcards.study}
+        mkdir -p {config[results_path_ldpred]}
+        mkdir -p {config[results_path_ldpred]}/tmp
+        mkdir -p {config[results_path_ldpred]}/tmp/{wildcards.study}
         Rscript {ldpred_path}/ldpred2.R \
             --ldpred-mode {config[mode]} \
             --col-stat BETA \
             --col-stat-se SE \
             --stat-type BETA \
             --sumstats {params.gwas}/ldpred/{wildcards.study}.qced.h.tsv.gz \
-            --out {wildcards.get_path_}/ldpred_score/{wildcards.study}.{config[mode]} \
+            --out {config[results_path_ldpred]}/{wildcards.study}.{config[mode]} \
             --cores 5 \
             --genomic-build hg38 \
             --name-score {wildcards.study} \
@@ -88,22 +80,21 @@ rule calculate_LDSC:
             --col-bp BP \
             --col-A1 A1 \
             --col-A2 A2 \
-            --merge-by-rsid \ 
-            --col-snp-id SNP \
+            --col-snp-id VARID \
             --col-chr CHR \
             --ld-meta-file {config[ldpred2_ref]}/map_hm3_plus.rds  \
             --ld-file {config[ldpred2_ref]}/ldref_hm3_plus/LD_with_blocks_chr@.rds \
             --geno-file-rds {input.rds} \
             --effective-sample-size {params.neff} \
-            --tmp-dir {wildcards.get_path_}/ldpred_score/tmp/{wildcards.study}
-        rm -f -r {wildcards.get_path_}/ldpred_score/tmp/{wildcards.study}
+            --tmp-dir {config[results_path_ldpred]}/tmp/{wildcards.study}
+        rm -f -r {config[results_path_ldpred]}/tmp/{wildcards.study}
         """
 
 rule create_pgs_data_table:
     input:
-        expand('{get_path_}' + '/ldpred_score/{study}' + '.' + config['mode'], zip , study = studies_to_calculate_list(), get_path_ = get_path_all())
+        expand(config['results_path_ldpred'] + '/{study}' + '.' + config['mode'], study = studies_to_calculate_list())
     output:
-        config['results_path_ldpred'] + '.tsv'
+        config['results_path_ldpred'] + '/results' + '.tsv'
     conda: "../environment.yaml"
     shell:
         """

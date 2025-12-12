@@ -10,18 +10,18 @@ number_of_controls: 5000
 pubmed_ids_to_exclude: 34662886,39633006,29942085
 
 # GWAS QC module
-study_list: output/gwas_list/gwas_search.txt.tsv
-output_qc_gwas_list: output/gwas_list/gwas_search
-output_path_qced_gwas: output/qced_gwas
-maf_file: input/reference/eur_hg38_hg37.frq
+study_list: gwas_all.tsv
+output_qc_gwas_list: output/gwas_list/gwas
+output_path_qced_gwas: output/qced
+maf_file: input/reference/eur.frq
 number_of_snps_after_qc: 250000
 ldpred2_ref: input/reference/ldpred2_ref # clone : https://github.com/comorment/ldpred2_ref
 
 # Heritability
-study_list_for_heritability: output/gwas_list/gwas_search.qced.tsv
-output_heritability_gwas_list: output/gwas_list/gwas_search
-hm3_path_hg38: input/reference/ldscore/eur_w_ld_chr_hg38/w_hm3.snplist.hg38
-hm3_path_hg37: input/reference/ldscore/eur_w_ld_chr/w_hm3.snplist
+study_list_for_heritability: output/gwas_list/gwas_all.qced.tsv
+output_heritability_gwas_list: output/gwas_list/
+hm3_path_hg38:
+hm3_path_hg37:
 ldsc_path: # default is repository/main/tools/ldsc
 chunksize: 100000
 ld_ref_hg38: input/reference/ldscore/eur_w_ld_chr_hg38
@@ -29,15 +29,15 @@ ld_ref_hg37: input/reference/ldscore/eur_w_ld_chr
 heritability_min_zscore: 4
 
 # Genetic Correlation
-study_list_for_genetic_correlation: output/gwas_list/gwas_search.heritability.tsv
-output_genetic_correlation_gwas_list: output/gwas_list/gwas_search
+study_list_for_genetic_correlation: output/gwas_all.heritability.tsv
+output_genetic_correlation_gwas_list: output/gwas_all
 ldsc_path: # default is repository/main/tools/ldsc
-ld_ref_hg38: input/reference/ldscore/eur_w_ld_chr_hg38
-ld_ref_hg37: input/reference/ldscore/eur_w_ld_chr
+ld_ref_hg38:
+ld_ref_hg37:
 rg_thr: 0.95
 chunksize_gen_cor: 300000
-hm3_path_hg38: input/reference/ldscore/eur_w_ld_chr_hg38/w_hm3.snplist.hg38
-hm3_path_hg37: input/reference/ldscore/eur_w_ld_chr/w_hm3.snplist
+hm3_path_hg38:
+hm3_path_hg37:
 
 # Genotpye QC module
 target_data: input/genotype
@@ -57,14 +57,14 @@ genotype: hg38
 
 # PGS calculation PRSice
 studies_to_calculate: output/gwas_list/gwas_search.genetic_correlation.tsv
-output_prsice_gwas_list: output/gwas_list/gwas_search
+output_prsice_gwas_list: output/gwas_list
 results_path: output
-results_directory_name: calculated_pgs_prsice
-results_data_table_name: pgs_datatable_prsice
-target_data_path: output/qced_genotype/corrected_hg38/data_test_0005
+results_directory_name:
+results_data_table_name:
+target_data_path:
 target_data_prefix: EUR.FINAL # name without extension (bim,bed,fam)
-clumping_reference_path: input/reference
-clumping_reference_prefix: eur_hg38.phase3 # name without extension (bim,bed,fam)
+clumping_reference_path:
+clumping_reference_prefix:  # name without extension (bim,bed,fam)
 clump_kb: 500
 clump_p: 1
 clump_r2: 0.2
@@ -75,10 +75,11 @@ min_number_of_snps_included_of_the_highest_p_value: 1000
 
 # PGS calculation LDpred
 studies_to_calculate_ldpred: output/gwas_list/ld_pred.tsv
-results_path_ldpred: output/gwas_list/calculated_pgs_ldpred_psycourse_neff
+results_path_ldpred: output/calculated_pgs_ldpred_bari
 mode : auto # or inf
 imputation_mode : random
-ldpred2_ref: input/reference/ldpred2_ref # clone : https://github.com/comorment/ldpred2_ref
-target_data_path_ldpred: /data/data/Psycourse/genotype/imputed_by_psycourse/plink_bestguess_maf0.01_rsID_nodup_snps/qced/corrected_hg38/plink_bestguess_maf0_01_rsID_nodup_snps
-target_data_prefix_ldpred: plink_bestguess_maf0_01_rsID_nodup_snps.FINAL # name without extension (bim,bed,fam)
+ldpred2_ref:  # clone : https://github.com/comorment/ldpred2_ref
+target_data_path_ldpred:
+target_data_prefix_ldpred:  # name without extension (bim,bed,fam)
 ldpred_path:     # default is repository/main/tools/ldpred2
+ldpred2_id:

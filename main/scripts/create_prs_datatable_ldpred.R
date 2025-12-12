@@ -18,7 +18,7 @@ files = studi_df$study_id
 studies_to_remove = c()
 studies_empty = c()
 for(f in files) {
-  ff= sprintf("%s/%s/%s.%s", studi_df[which(studi_df$study_id == f),]$path,"ldpred_score",f,mode)
+  ff= sprintf("%s/%s.%s", prs_path,f, mode)
   if(!file.exists(ff) || file.size(ff) == 0L || is.na(file.size(ff))) {
     if(file.size(ff) == 0L || is.na(file.size(ff))) {
       studies_empty = c(studies_empty,f)
@@ -46,15 +46,15 @@ for(f in files) {
 }
 
 if(length(files_exist) != 0) {
-  df <- read.table(sprintf("%s/%s/%s.%s", studi_df[which(studi_df$study_id == files_exist[1]),]$path, "ldpred_score",files_exist[1],mode), header = T)
+  df <- read.table(sprintf("%s/%s.%s", prs_path,files_exist[1],mode), header = T)
   if(length(files_exist) >1) {
     for(f in files_exist[2:length(files_exist)]) {
-      df2 <- read.table(sprintf("%s/%s/%s.%s", studi_df[which(studi_df$study_id == f),]$path, "ldpred_score",f,mode), header = T)
+      df2 <- read.table(sprintf("%s/%s.%s", prs_path,f,mode), header = T)
       df <- merge(df,df2, by = c("FID","IID"))
     }
   }
-  write.table(df[,-1], paste0(prs_path,".tsv"), row.names = F, col.names = T, quote = F, sep = "\t")
+  write.table(df[,-1], paste0(prs_path,"/results.tsv"), row.names = F, col.names = T, quote = F, sep = "\t")
 } else {
-  write.table(data.frame(x="empty"), paste0(prs_path,".tsv"), row.names = F, col.names = T, quote = F, sep = "\t")
+  write.table(data.frame(x="empty"), paste0(prs_path,"/results.tsv"), row.names = F, col.names = T, quote = F, sep = "\t")
 }
 

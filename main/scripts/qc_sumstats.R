@@ -8,13 +8,13 @@ suppressMessages(library(gwasrapidd))
 suppressMessages(library(bigsnpr))
 suppressMessages(library(stats))
 args = commandArgs(trailingOnly=TRUE)
-
+    
 input <- args[1]
 output <- args[2]
 maf_file <- args[3]
 N = as.numeric(args[4])
 output_other_files = args[5]
-NEFF = args[6]
+NEFF = as.numeric(args[6])
 
 base <- fread(input, showProgress = FALSE, data.table = F)
 
@@ -179,7 +179,9 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   }
 
   base = base %>% select(SNP,CHR,BP,A1,A2,BETA,OR,P,SE,N,MAF,VARID)
-
+  
+  base$NEFF = NEFF
+  
   #### Remove SNPs with no beta or OR - these cannot be used by PRSice ####
   base <- dplyr::filter(base, !(is.na(BETA) == TRUE & is.na(OR) == TRUE))
 
@@ -215,6 +217,12 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   }
 
   #### For SNPs with no p-value, replace the NA by a 1 ####
+  nan_values = which(base$P == "NaN")
+  if(length(nan_values) > 0) {
+    base[nan_values,]$P = NA
+  }
+  base$P = gsub("e-$","e-01",base$P)
+  base$P = gsub("e$","e-01",base$P)
   base <- base %>% mutate(P = if_else(is.na(P), 1, as.numeric(P)))
   #### Remove duplicate SNPs - these cannot be used by PRSice (an error will be thrown) ####
   base <- distinct(base, SNP, .keep_all = TRUE)
@@ -229,7 +237,12 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
 
   problematic_p_value = FALSE
   if(dim(base)[1] != 0 ) {
-    if((sum(base$P > 1) > 0) | (sum(base$P < 0) > 0)) {
+    p_1 = c(which(base$P > 1), which(base$P < 0))
+    if(length(p_1) != 0) {
+      base = base[-p_1,]
+    }
+    
+    if(dim(base)[1] == 0) {
       problematic_p_value = TRUE
     }
   }
@@ -251,9 +264,7 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
 
   write.table(dfx,paste0(output_other_files,".metadata.tsv"), quote = F, sep = "\t", col.names = T, row.names = F)
 
-  base = base[,c("VARID","SNP","CHR","BP","A1","A2","P","MAF","BETA","OR","SE","N")]
-
-  base$NEFF = NEFF
+  base = base[,c("VARID","SNP","CHR","BP","A1","A2","P","MAF","BETA","OR","SE","N","NEFF")]
 
   write.table(summary(base),paste0(output_other_files,".summary.qced.tsv"), quote = F, sep = "\t", col.names = T, row.names = F)
 
