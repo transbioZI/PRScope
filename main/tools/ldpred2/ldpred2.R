@@ -308,7 +308,7 @@ if (argLdpredMode == 'inf') {
   cat('Running LDPRED2 auto model\n')
   if (!is.na(setSeed)) set.seed(setSeed)
   multi_auto <- snp_ldpred2_auto(corr, df_beta, h2_init=h2_est, vec_p_init=seq_log(1e-4, parHyperPMax, length.out=parHyperPLength), 
-                                 allow_jump_sign=F, shrink_corr=0.95, ncores=NCORES, burn_in = 800, num_iter = 400)
+                                 allow_jump_sign=F, shrink_corr=0.95, ncores=NCORES, burn_in = 500, num_iter = 200)
   cat('Plotting diagnostics: ', fileOutputPlot, '\n', sep='')
   library(ggplot2)
   auto <- multi_auto[[1]]
@@ -325,7 +325,7 @@ if (argLdpredMode == 'inf') {
   cat('Filtering chains\n')
   range <- sapply(multi_auto, function(auto) diff(range(auto$corr_est)))
   # Keep chains that pass the filtering below
-  keep <- (range > (0.90 * quantile(range, 0.90, na.rm = T)))
+  keep <- (range > (0.95 * quantile(range, 0.95, na.rm = T)))
   beta <- rowMeans(as.data.frame(sapply(multi_auto[keep], function (auto) auto$beta_est)))
 
   h2_est_med <- sapply(multi_auto[keep], function(auto) auto$h2_est)[keep]
