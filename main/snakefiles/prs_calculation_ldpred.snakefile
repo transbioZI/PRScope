@@ -86,7 +86,7 @@ rule calculate_LDSC:
             --ld-file {config[ldpred2_ref]}/ldref_hm3_plus/LD_with_blocks_chr@.rds \
             --geno-file-rds {input.rds} \
             --effective-sample-size {params.neff} \
-            --tmp-dir {config[results_path_ldpred]}/tmp/{wildcards.study}
+            --tmp-dir {config[results_path_ldpred]}/tmp/{wildcards.study} 2>&1 | tee {config[results_path_ldpred]}/{wildcards.study}.{config[mode]}.log
         rm -f -r {config[results_path_ldpred]}/tmp/{wildcards.study}
         """
 
