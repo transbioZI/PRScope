@@ -204,7 +204,7 @@ cd PRScope
    - `EUR.bim`
    - `EUR.fam`
 
-   (Replace with your genotype data if desired. Keep EUR. as filenames)
+   (Replace with your genotype data if desired. And adjust in `/cofing/config_vanilla` the `genotype_data_name` and `traget_data_prefix_ldpred` filenames accordingly)
 
 4. Running PRScope
 
