@@ -48,7 +48,7 @@ par <- add_argument(par, "--n-controls", help="Nr controls when phenotype is bin
 # Polygenic score
 par <- add_argument(par, "--name-score", help="Set column name for the created score", nargs=1, default='score')
 # Parameters to LDpred
-par <- add_argument(par, "--hyper-p-length", help="Length of hyperparameter p sequence to use for --ldpred-mode auto", default=30)
+par <- add_argument(par, "--hyper-p-length", help="Length of hyperparameter p sequence to use for --ldpred-mode auto", default=50)
 par <- add_argument(par, "--hyper-p-max", help="Maximum (<1) of hyperparameter p sequence to use for --ldpred-mode auto", default=0.2)
 # Others
 par <- add_argument(par, "--ldpred-mode", help='Ether "auto" or "inf" (infinitesimal)', default="inf")
@@ -276,54 +276,72 @@ res = foreach(st=1:nrow(studies)) %dopar% {
         }
     }
 
-    cat('Running LDPRED2 auto model\n')
-    if (!is.na(setSeed)) set.seed(setSeed)
-    multi_auto <- snp_ldpred2_auto(corr, df_beta, h2_init=h2_est, vec_p_init=seq_log(1e-4, parHyperPMax, length.out=parHyperPLength),
-                               allow_jump_sign=F, shrink_corr=0.95, ncores=NCORES, burn_in = 800, num_iter = 400)
-    cat('Plotting diagnostics: ', fileOutputPlot, '\n', sep='')
-    library(ggplot2)
-    auto <- multi_auto[[1]]
-    dta <- data.frame(path_p_est=auto$path_p_est, path_h2_est=auto$path_h2_est, x=1:length(auto$path_p_est))
-    plt <- plot_grid(
-    ggplot(dta, aes(y=path_p_est, x=x)) + geom_point() + theme_bigstatsr() +
-        geom_hline(aes(yintercept=auto$p_est), col="blue") +
-        scale_y_log10() + labs(y="p"),
-    ggplot(dta, aes(y=path_h2_est, x=x)) + geom_point() + theme_bigstatsr() +
-        geom_hline(aes(yintercept=auto$h2_est), col="blue") + labs(y="h2"),
-    ncol=1, align="hv"
-    )
-    ggsave(plt, file=fileOutputPlot)
-    cat('Filtering chains\n')
-    range <- sapply(multi_auto, function(auto) diff(range(auto$corr_est)))
-    # Keep chains that pass the filtering below
-    keep <- (range > (0.90 * quantile(range, 0.90, na.rm = T)))
-    beta <- rowMeans(as.data.frame(sapply(multi_auto[keep], function (auto) auto$beta_est)))
+    ldsc <- with(df_beta, snp_ldsc(ld, ld_size, chi2=(beta/beta_se)^2, sample_size=NEFF, blocks = NULL, ncores=NCORES))
+    h2_est <- ldsc[["h2"]]
+    if(h2_est < 0) {
+        cat('\n### h2_init < 0, calculation finished with an empty result\n')
+        results_fam[,nameScore] = rep(NA,dim(results_fam)[1])
+    } else {
+        cat('Running LDPRED2 auto model\n')
+        if (!is.na(setSeed)) set.seed(setSeed)
 
-    h2_est_med <- sapply(multi_auto[keep], function(auto) auto$h2_est)[keep]
-    p_est <-sapply(multi_auto[keep], function(auto) auto$p_est)[keep]
+        sh_cor = sort(runif(dim(map_ldref)[1], min = 0.6, max = 0.99))[dim(df_beta)[1]]
 
-    cat('Scoring all individuals...\n')
-    # find which SNPs to use, and whether we need to flip their sign
+        multi_auto <- snp_ldpred2_auto(corr, df_beta, h2_init=h2_est, vec_p_init=seq_log(1e-4, parHyperPMax, length.out=parHyperPLength),
+                                    allow_jump_sign=F, shrink_corr=sh_cor, ncores=NCORES, burn_in = 500, num_iter = 250)
 
-    map_pgs <- df_beta[1:4]; map_pgs$beta <- 1
-    map_pgs2 <- snp_match(map_pgs, map, join_by_pos=!mergeByRsid, match.min.prop=0)
+        #multi_auto <- snp_ldpred2_auto(corr, df_beta, h2_init=h2_est, vec_p_init=seq_log(1e-4, parHyperPMax, length.out=parHyperPLength),
+        #                           allow_jump_sign=F, shrink_corr=0.95, ncores=NCORES, burn_in = 800, num_iter = 400)
 
-    tryCatch(
-        pred_all <- big_prodVec(G, beta * map_pgs2$beta, ind.col=map_pgs2[['_NUM_ID_']], ncores=NCORES),
-        error=function(er) {
-            cat('bigstatsr::big_prodVec threw an error:\n')
-            message(er)
-            cat('\n\nErrors regarding "missingness in X" may be solved by imputing genotype data or passing --geno-impute-zero\n')
-            er
-            quit(status=1, save='no')
-    },
-        warning=function(er) {
-            cat('bigstatsr::big_prodVec threw a warning:\n')
-            message(er)
-        }
-    )
+        cat('Plotting diagnostics: ', fileOutputPlot, '\n', sep='')
+        library(ggplot2)
+        auto <- multi_auto[[1]]
+        dta <- data.frame(path_p_est=auto$path_p_est, path_h2_est=auto$path_h2_est, x=1:length(auto$path_p_est))
+        plt <- plot_grid(
+        ggplot(dta, aes(y=path_p_est, x=x)) + geom_point() + theme_bigstatsr() +
+            geom_hline(aes(yintercept=auto$p_est), col="blue") +
+            scale_y_log10() + labs(y="p"),
+        ggplot(dta, aes(y=path_h2_est, x=x)) + geom_point() + theme_bigstatsr() +
+            geom_hline(aes(yintercept=auto$h2_est), col="blue") + labs(y="h2"),
+        ncol=1, align="hv"
+        )
+        ggsave(plt, file=fileOutputPlot)
+        cat('Filtering chains\n')
+        range <- sapply(multi_auto, function(auto) diff(range(auto$corr_est)))
+        # Keep chains that pass the filtering below
+        keep <- (range > (0.95 * quantile(range, 0.95, na.rm = T)))
+        nas <- sum(is.na(keep))
+        if (nas > 0) cat('Omitting', nas, 'chains out of', length(keep), ' due to missing values in correlation range\n')
+        keep[is.na(keep)] <- F
+        beta <- rowMeans(as.data.frame(sapply(multi_auto[keep], function (auto) auto$beta_est)))
 
-    results_fam[,nameScore] = pred_all
+        h2_est_med <- sapply(multi_auto[keep], function(auto) auto$h2_est)[keep]
+        p_est <-sapply(multi_auto[keep], function(auto) auto$p_est)[keep]
+
+        cat('Scoring all individuals...\n')
+        # find which SNPs to use, and whether we need to flip their sign
+
+        map_pgs <- df_beta[1:4]; map_pgs$beta <- 1
+        map_pgs2 <- snp_match(map_pgs, map, join_by_pos=!mergeByRsid, match.min.prop=0)
+
+        tryCatch(
+            pred_all <- big_prodVec(G, beta * map_pgs2$beta, ind.col=map_pgs2[['_NUM_ID_']], ncores=NCORES),
+            error=function(er) {
+                cat('bigstatsr::big_prodVec threw an error:\n')
+                message(er)
+                cat('\n\nErrors regarding "missingness in X" may be solved by imputing genotype data or passing --geno-impute-zero\n')
+                er
+                quit(status=1, save='no')
+        },
+            warning=function(er) {
+                cat('bigstatsr::big_prodVec threw a warning:\n')
+                message(er)
+            }
+        )
+
+        results_fam[,nameScore] = pred_all
+    }
+
     write.table(results_fam, fileOutputResults, row.names = F, col.names = F, quote = F, sep = "\t")
     file.remove(paste0(tmp_file, '.sbk'))
 }
