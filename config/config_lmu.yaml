@@ -1,0 +1,85 @@
+# GWAS search module
+efo_ids: input/efo_ids.txt
+output_path_gwas_search: output/gwas_list
+output_name_gwas_search: gwas_search
+population: European
+number_of_snps: 250000
+harmonised_list: http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/harmonised_list.txt
+number_of_cases: 2000
+number_of_controls: 5000
+pubmed_ids_to_exclude: 34662886,39633006,29942085
+
+# GWAS QC module
+study_list: output/gwas_list/gwas_search.txt.tsv
+output_qc_gwas_list: output/gwas_list/gwas_search
+output_path_qced_gwas: output/qced_gwas
+maf_file: input/reference/eur_hg38_hg37.frq
+number_of_snps_after_qc: 250000
+ldpred2_ref: input/reference/ldpred2_ref # clone : https://github.com/comorment/ldpred2_ref
+
+# Heritability
+study_list_for_heritability: output/gwas_list/gwas_search.qced.tsv
+output_heritability_gwas_list: output/gwas_list/gwas_search
+hm3_path_hg38: input/reference/ldscore/eur_w_ld_chr_hg38/w_hm3.snplist.hg38
+hm3_path_hg37: input/reference/ldscore/eur_w_ld_chr/w_hm3.snplist
+ldsc_path: # default is repository/main/tools/ldsc
+chunksize: 100000
+ld_ref_hg38: input/reference/ldscore/eur_w_ld_chr_hg38
+ld_ref_hg37: input/reference/ldscore/eur_w_ld_chr
+heritability_min_zscore: 4
+
+# Genetic Correlation
+study_list_for_genetic_correlation: output/gwas_list/gwas_search.heritability.tsv
+output_genetic_correlation_gwas_list: output/gwas_list/gwas_search
+ldsc_path: # default is repository/main/tools/ldsc
+ld_ref_hg38: input/reference/ldscore/eur_w_ld_chr_hg38
+ld_ref_hg37: input/reference/ldscore/eur_w_ld_chr
+rg_thr: 0.95
+chunksize_gen_cor: 300000
+hm3_path_hg38: input/reference/ldscore/eur_w_ld_chr_hg38/w_hm3.snplist.hg38
+hm3_path_hg37: input/reference/ldscore/eur_w_ld_chr/w_hm3.snplist
+
+# Genotpye QC module
+target_data: input/genotype
+genotype_data_name: EUR
+output_path: output/qced_genotype
+processed_data_directory_name: maf_0005
+convert_rsid: TRUE
+shallow_genotype_missingness: 0.2
+deep_genotype_missingness: 0.02
+shallow_sample_missingness: 0.2
+deep_sample_missingness: 0.02
+maf: 0.005
+hwe: 1e-6
+heterozygosity: 3 # Threshold for acceptable deviation from mean heterozygosity per individual.
+relatedness: 0.1875 #Threshold for acceptable proportion of IBD between pair of individuals.
+genotype: hg38
+
+# PGS calculation PRSice
+studies_to_calculate: output/gwas_list/gwas_search.genetic_correlation.tsv
+output_prsice_gwas_list: output/gwas_list/gwas_search
+results_path: output
+results_directory_name: calculated_pgs_prsice
+results_data_table_name: pgs_datatable_prsice
+target_data_path: output/qced_genotype/corrected_hg38/data_test_0005
+target_data_prefix: EUR.FINAL # name without extension (bim,bed,fam)
+clumping_reference_path: input/reference
+clumping_reference_prefix: eur_hg38.phase3 # name without extension (bim,bed,fam)
+clump_kb: 500
+clump_p: 1
+clump_r2: 0.2
+base_maf: 0.01
+p_values: "0.00000005,0.0000001,0.000001,0.00001,0.0001,0.001,0.01,0.05,0.1,0.5,1"
+min_number_of_snps_included: 100
+min_number_of_snps_included_of_the_highest_p_value: 1000
+
+# PGS calculation LDpred
+studies_to_calculate_ldpred: output/gwas_list/ld_pred_2.tsv
+results_path_ldpred: output/deleteme
+mode : auto # or inf
+imputation_mode : random
+ldpred2_ref: input/reference/ldpred2_ref # clone : https://github.com/comorment/ldpred2_ref
+target_data_path_ldpred: /data/data/Psycourse/genotype/imputed_by_psycourse/plink_bestguess_maf0.01_rsID_nodup_snps/qced/corrected_hg38/plink_bestguess_maf0_01_rsID_nodup_snps/hapmap
+target_data_prefix_ldpred: hapmap # name without extension (bim,bed,fam)
+ldpred_path:     # default is repository/main/tools/ldpred2
+ldpred2_id:
