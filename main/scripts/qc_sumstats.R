@@ -127,7 +127,7 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   colnames(base)[which(names(base) == "STANDARD_ERROR")] <- "SE"
 
   base$MAF = 0
-  base$VARID <- str_c(base$CHR, ":", base$BP)
+  base$VARID <- str_c(base$CHR, ":", base$BP,"_",base$A1,"_",base$A2)
 
   if(dim(base)[1] != 0 ) {
     maf = as.data.frame(fread(maf_file, select = c("SNP","MAF_hg38"), showProgress = FALSE))
@@ -226,7 +226,6 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
   base <- base %>% mutate(P = if_else(is.na(P), 1, as.numeric(P)))
   #### Remove duplicate SNPs - these cannot be used by PRSice (an error will be thrown) ####
   base <- distinct(base, SNP, .keep_all = TRUE)
-  base <- distinct(base, VARID, .keep_all = TRUE)
 
   if(dim(base)[1] != 0 ) {
     if(abs(median(base$BETA)) > 0.5 ) {

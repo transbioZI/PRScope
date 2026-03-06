@@ -80,12 +80,12 @@ rule calculate_LDSC:
             --col-bp BP \
             --col-A1 A1 \
             --col-A2 A2 \
-            --col-snp-id VARID \
+            --col-snp-id SNP \
             --col-chr CHR \
             --ld-meta-file {config[ldpred2_ref]}/map_hm3_plus.rds  \
             --ld-file {config[ldpred2_ref]}/ldref_hm3_plus/LD_with_blocks_chr@.rds \
             --geno-file-rds {input.rds} \
-            --effective-sample-size {params.neff} \
+            --col-n NEFF \
             --tmp-dir {config[results_path_ldpred]}/tmp/{wildcards.study} 2>&1 | tee {config[results_path_ldpred]}/{wildcards.study}.{config[mode]}.log
         rm -f -r {config[results_path_ldpred]}/tmp/{wildcards.study}
         """

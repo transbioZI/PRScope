@@ -42,9 +42,9 @@ rule munge_study:
     shell:
         """
         if [[ {params.genome}  == "hg38" ]]; then
-            python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {wildcards.study_path}/ldpred/{wildcards.study}.qced.h.tsv.gz --N-col N --out {wildcards.study_path}/munged/{wildcards.study} --merge-alleles {config[hm3_path_hg38]} --ignore VARID,OR,EAF,Z_SCORE,SE,NEFF
+            python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {wildcards.study_path}/ldpred/{wildcards.study}.qced.h.tsv.gz --N-col NEFF --out {wildcards.study_path}/munged/{wildcards.study} --merge-alleles {config[hm3_path_hg38]} --ignore VARID,OR,EAF,Z_SCORE,SE,N
         else
-            python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {wildcards.study_path}/ldpred/{wildcards.study}.qced.h.tsv.gz --N-col N --out {wildcards.study_path}/munged/{wildcards.study} --merge-alleles {config[hm3_path_hg37]} --ignore VARID,OR,EAF,Z_SCORE,SE,NEFF
+            python2 {ldsc_path}/munge_sumstats.py --chunksize {config[chunksize]} --sumstats {wildcards.study_path}/ldpred/{wildcards.study}.qced.h.tsv.gz --N-col NEFF --out {wildcards.study_path}/munged/{wildcards.study} --merge-alleles {config[hm3_path_hg37]} --ignore VARID,OR,EAF,Z_SCORE,SE,N
         fi
         """
 
