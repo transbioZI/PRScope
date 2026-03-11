@@ -51,7 +51,7 @@ if(all(c(problematic_N, problematic_p_value, problematic_beta, problematic_MAF_m
       res$ld_pred_failed = TRUE
     } else {
       res$ld_pred_failed = FALSE
-      columns = c("varid","snp","chr","pos","a1","a0","p","maf","beta","or","se","n")
+      columns = c("varid","snp","chr","pos","a1","a0","p","maf","beta","or","se","neff")
       base <- base[ , columns]
       if(dim(base_other)[1] != 0) {
         base_other = base_other[,columns]

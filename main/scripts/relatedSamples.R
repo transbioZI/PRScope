@@ -1,6 +1,9 @@
 rm(list=ls())
 gc()
-
+install.packages("dplyr", repos='https://cloud.r-project.org')
+install.packages("rlang", repos='https://cloud.r-project.org')
+install.packages("vctrs", repos='https://cloud.r-project.org')
+install.packages('plinkQC', repos = c('https://meyer-lab-cshl.r-universe.dev', 'https://cloud.r-project.org'))
 library("plinkQC")
 
 args = commandArgs(trailingOnly=TRUE)
