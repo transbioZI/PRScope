@@ -66,9 +66,9 @@ writeLines(paste0(a$V1," ",b$V2), paste0(input,".keep_samples"))
 
 system(paste0(plink, " --bfile ", input, " --make-bed --allow-no-sex --autosome --extract ", paste0(input,".extract1")," --out ", paste0(input,".temp1")))
 if(convert == TRUE) {
-system(paste0(plink2, " --bfile ", paste0(input,".temp1"), " --max-alleles 2 --snps-only just-acgt --make-bed --allow-no-sex --set-all-var-ids @:#_\\$r_\\$a --out ", paste0(input,".temp2")))
+system(paste0(plink2, " --bfile ", paste0(input,".temp1"), " --snps-only just-acgt --make-bed --allow-no-sex --set-all-var-ids @:#_\\$r_\\$a --out ", paste0(input,".temp2")))
 } else {
-system(paste0(plink2, " --bfile ", paste0(input,".temp1"), " --max-alleles 2 --snps-only just-acgt --make-bed --out ", paste0(input,".temp2")))
+system(paste0(plink2, " --bfile ", paste0(input,".temp1"), " --snps-only just-acgt --make-bed --out ", paste0(input,".temp2")))
 }
 
 system( paste0("rm -rf ", input,".temp1*") )
