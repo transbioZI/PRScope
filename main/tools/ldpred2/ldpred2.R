@@ -46,7 +46,7 @@ par <- add_argument(par, "--n-controls", help="Nr controls when phenotype is bin
 # Polygenic score
 par <- add_argument(par, "--name-score", help="Set column name for the created score", nargs=1, default='score')
 # Parameters to LDpred
-par <- add_argument(par, "--hyper-p-length", help="Length of hyperparameter p sequence to use for --ldpred-mode auto", default=30)
+par <- add_argument(par, "--hyper-p-length", help="Length of hyperparameter p sequence to use for --ldpred-mode auto", default=50)
 par <- add_argument(par, "--hyper-p-max", help="Maximum (<1) of hyperparameter p sequence to use for --ldpred-mode auto", default=0.2)
 # Others
 par <- add_argument(par, "--ldpred-mode", help='Ether "auto" or "inf" (infinitesimal)', default="inf")
@@ -143,8 +143,9 @@ if (fileOutputMerge) {
 if (!file.exists(parsed$tmp_dir)) stop("Temporary directory", parsed$tmp_dir, "does not exist") 
 
 cat('Loading backingfile:', fileGeno ,'\n')
+suppressPackageStartupMessages(library(bit64))
 obj.bigSNP <- snp_attach(fileGeno)
-
+detach("package:bit64", unload = TRUE)
 # Store some key variables
 G <- obj.bigSNP$genotypes
 CHR <- obj.bigSNP$map$chromosome
@@ -285,14 +286,10 @@ for (chr in chr2use) {
 }
 
 cat('\n### Running LD score regression\n')
-ldsc <- with(df_beta, snp_ldsc(ld, ld_size, chi2=(beta/beta_se)^2, sample_size=n_eff, ncores=NCORES))
+ldsc <- with(df_beta, snp_ldsc(ld, ld_size, chi2=(beta/beta_se)^2, sample_size=n_eff, blocks = NULL, ncores=NCORES))
 h2_est <- ldsc[["h2"]]
-h2_est_se <- ldsc[["h2_se"]]
+#h2_est_se <- ldsc[["h2_se"]]
 cat('Results:', 'Intercept =', ldsc[["int"]], 'H2 =', h2_est, '\n')
-write(paste0('Intercept:',ldsc[["int"]]),file=fileOutputHer, append=TRUE)
-write(paste0('Intercept_SE:',ldsc[["int_se"]]),file=fileOutputHer, append=TRUE)
-write(paste0('H2:',h2_est),file=fileOutputHer, append=TRUE)
-write(paste0('H2_SE:',h2_est_se),file=fileOutputHer, append=TRUE)
 
 if(h2_est < 0) {
   writeLines(c(paste0("FID IID ",nameScore)),fileOutput)
@@ -307,8 +304,9 @@ if (argLdpredMode == 'inf') {
 } else if (argLdpredMode == 'auto') {
   cat('Running LDPRED2 auto model\n')
   if (!is.na(setSeed)) set.seed(setSeed)
+  sh_cor = sort(runif(dim(map_ldref)[1], min = 0.6, max = 0.99))[dim(df_beta)[1]]
   multi_auto <- snp_ldpred2_auto(corr, df_beta, h2_init=h2_est, vec_p_init=seq_log(1e-4, parHyperPMax, length.out=parHyperPLength), 
-                                 allow_jump_sign=F, shrink_corr=0.95, ncores=NCORES, burn_in = 500, num_iter = 200)
+                                 allow_jump_sign=F, shrink_corr=sh_cor, ncores=NCORES, burn_in = 500, num_iter = 400)
   cat('Plotting diagnostics: ', fileOutputPlot, '\n', sep='')
   library(ggplot2)
   auto <- multi_auto[[1]]
@@ -326,12 +324,10 @@ if (argLdpredMode == 'inf') {
   range <- sapply(multi_auto, function(auto) diff(range(auto$corr_est)))
   # Keep chains that pass the filtering below
   keep <- (range > (0.95 * quantile(range, 0.95, na.rm = T)))
+  nas <- sum(is.na(keep))
+  if (nas > 0) cat('Omitting', nas, 'chains out of', length(keep), ' due to missing values in correlation range\n')
+  keep[is.na(keep)] <- F
   beta <- rowMeans(as.data.frame(sapply(multi_auto[keep], function (auto) auto$beta_est)))
-
-  h2_est_med <- sapply(multi_auto[keep], function(auto) auto$h2_est)[keep]
-  p_est <-sapply(multi_auto[keep], function(auto) auto$p_est)[keep]
-  write(paste0('H2_keep:',h2_est_med),file=fileOutputHer, append=TRUE)
-  write(paste0('H2_p_keep:',p_est),file=fileOutputHer, append=TRUE)
 }
 
 cat('Scoring all individuals...\n')

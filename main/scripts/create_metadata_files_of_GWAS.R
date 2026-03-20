@@ -103,7 +103,6 @@ if(length(studies) != 0) {
              (BETA_failed == FALSE) &
              (CHR_failed == FALSE) &
              (SE_failed == FALSE) &
-             (N_failed == FALSE) &
              !(is.na(SAMPLE_SIZE)) & (MAF_matching_failed == FALSE) & (ld_pred_failed == FALSE) &
              (SAMPLE_SIZE > 0))] = TRUE
   a = apply_which_false(SNP_count_after_QC > number_of_snps, number_of_snps, "Number of SNPs")

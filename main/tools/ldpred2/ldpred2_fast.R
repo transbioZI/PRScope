@@ -127,7 +127,9 @@ if (mergeByRsid) {
 }
 
 cat('Loading backingfile:', fileGeno ,'\n')
+suppressPackageStartupMessages(library(bit64))
 obj.bigSNP <- snp_attach(fileGeno)
+detach("package:bit64", unload = TRUE)
 
 # Store some key variables
 G <- obj.bigSNP$genotypes
@@ -288,7 +290,7 @@ res = foreach(st=1:nrow(studies)) %dopar% {
         sh_cor = sort(runif(dim(map_ldref)[1], min = 0.6, max = 0.99))[dim(df_beta)[1]]
 
         multi_auto <- snp_ldpred2_auto(corr, df_beta, h2_init=h2_est, vec_p_init=seq_log(1e-4, parHyperPMax, length.out=parHyperPLength),
-                                    allow_jump_sign=F, shrink_corr=sh_cor, ncores=NCORES, burn_in = 500, num_iter = 250)
+                                    allow_jump_sign=F, shrink_corr=sh_cor, ncores=NCORES, burn_in = 500, num_iter = 400)
 
         #multi_auto <- snp_ldpred2_auto(corr, df_beta, h2_init=h2_est, vec_p_init=seq_log(1e-4, parHyperPMax, length.out=parHyperPLength),
         #                           allow_jump_sign=F, shrink_corr=0.95, ncores=NCORES, burn_in = 800, num_iter = 400)

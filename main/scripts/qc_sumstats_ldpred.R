@@ -27,14 +27,13 @@ base <- fread(input, showProgress = FALSE, data.table = F)
 res = fread(metadata, showProgress = FALSE, data.table = F)
 snps = readLines(snps_list)
 
-problematic_N = !as.logical(res$problematic_N)
 problematic_p_value = !as.logical(res$problematic_p_value)
 problematic_beta = !as.logical(res$problematic_beta)
 problematic_MAF_match = !as.logical(res$problematic_MAF_match)
 problematic_SE = !as.logical(res$problematic_SE)
 problematic_CHR = !as.logical(res$problematic_CHR)
 
-if(all(c(problematic_N, problematic_p_value, problematic_beta, problematic_MAF_match, problematic_SE, problematic_CHR))) {
+if(all(c(problematic_p_value, problematic_beta, problematic_MAF_match, problematic_SE, problematic_CHR))) {
 
     colnames(base) = tolower(colnames(base))
     colnames(base)[colnames(base) == "a2"] = "a0"

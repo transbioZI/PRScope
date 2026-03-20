@@ -170,11 +170,15 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
 
   z_score_studies = FALSE
   if(all(is.na(base$BETA)) & all(is.na(base$OR))) {
-     if(("Z_SCORE" %in% colnames(base))) {
+     if(("Z_SCORE" %in% colnames(base)) & problematic_N == FALSE & problematic_MAF_match == FALSE) {
+       base$Z_SCORE = suppressWarnings(as.numeric(base$Z_SCORE))
        base = dplyr::filter(base, !(is.na(Z_SCORE)))
-       base$BETA = base$Z_SCORE / sqrt( 2 * base$MAF * ( 1 - base$MAF) * ( base$N + base$Z_SCORE^2 ) )
-       base$SE = 1 / sqrt( 2 * base$MAF * ( 1 - base$MAF ) * ( base$N + base$Z_SCORE^2 ) )
-       z_score_studies = TRUE
+       base = dplyr::filter(base, (is.finite(Z_SCORE) == TRUE))
+       if( dim(base)[1] > 0 ) {
+        base$BETA = base$Z_SCORE / sqrt( 2 * base$MAF * ( 1 - base$MAF) * ( base$N + base$Z_SCORE^2 ) )
+        base$SE = 1 / sqrt( 2 * base$MAF * ( 1 - base$MAF ) * ( base$N + base$Z_SCORE^2 ) )
+        z_score_studies = TRUE
+       }
      }
   }
 

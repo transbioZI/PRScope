@@ -14,21 +14,6 @@ def studies_to_calculate():
 def studies_to_calculate_list():
     return list(studies_to_calculate().index)
 
-def get_genetic_correlation_command(wildcards):
-    all_studies = studies_to_calculate_list()
-    all_paths = get_path()
-    index_of_st = all_studies.index(wildcards.study)
-    command_str = "--rg " + wildcards.study_path + "/munged/" + wildcards.study + ".sumstats.gz"
-    if (index_of_st+1) == len(all_studies):
-        return "--h2 " + wildcards.study_path + "/munged/" + wildcards.study + ".sumstats.gz"
-
-    commands = list()
-    commands.append(command_str)
-    for x in range(index_of_st+1, len(all_studies)):
-        commands.append(all_paths[x] + "/munged/" + all_studies[x] + ".sumstats.gz")
-
-    return ",".join(commands)
-
 def get_path():
     csvFile = studies_to_calculate()
     parent_path = list()
@@ -36,6 +21,26 @@ def get_path():
         p = csvFile.loc[i].path
         parent_path.append(str(p))
     return parent_path
+
+def get_genetic_correlation_command(wildcards):
+    all_studies = studies_to_calculate_list()
+    all_paths = get_path()
+    index_of_st = all_studies.index(wildcards.study)
+
+    command_str = "--rg " + wildcards.study_path + "/munged/" + wildcards.study + ".sumstats.gz"
+    if (index_of_st+1) == len(all_studies):
+        return str("EMPTY")
+
+    commands = list()
+    commands.append(command_str)
+    for x in range(index_of_st+1, len(all_studies)):
+        cor_file1 = wildcards.study_path + "/genetic_correlation/pairs/" + wildcards.study + "_" + all_studies[x] + ".cor"
+        cor_file2 = all_paths[x] + "/genetic_correlation/pairs/" + all_studies[x] + "_" + wildcards.study + ".cor"
+        if not os.path.isfile(cor_file1) and not os.path.isfile(cor_file2):
+            commands.append(all_paths[x] + "/munged/" + all_studies[x] + ".sumstats.gz")
+    if len(commands) == 1:
+        return str("EMPTY")
+    return ",".join(commands)
 
 def get_genome_build(wildcards):
     csvFile = studies_to_calculate()
@@ -71,10 +76,14 @@ rule calculate_genetic_correlation:
         "{study_path}" + "/genetic_correlation/{study}.log"
     shell:
         """
-        if [[ {params.genome}   == "hg38" ]]; then
-            python2 {ldsc_path}/ldsc.py {params.command_str} --ref-ld-chr {config[ld_ref_hg38]}/ --w-ld-chr {config[ld_ref_hg38]}/ --out {wildcards.study_path}/genetic_correlation/{wildcards.study}
+        if [[ "{params.command_str}" == "EMPTY" ]]; then
+            touch {wildcards.study_path}/genetic_correlation/{wildcards.study}.log
         else
-            python2 {ldsc_path}/ldsc.py {params.command_str} --ref-ld-chr {config[ld_ref_hg37]}/ --w-ld-chr {config[ld_ref_hg37]}/ --out {wildcards.study_path}/genetic_correlation/{wildcards.study}
+            if [[ "{params.genome}" == "hg38" ]]; then
+                python2 {ldsc_path}/ldsc.py {params.command_str} --ref-ld-chr {config[ld_ref_hg38]}/ --w-ld-chr {config[ld_ref_hg38]}/ --out {wildcards.study_path}/genetic_correlation/{wildcards.study}
+            else
+                python2 {ldsc_path}/ldsc.py {params.command_str} --ref-ld-chr {config[ld_ref_hg37]}/ --w-ld-chr {config[ld_ref_hg37]}/ --out {wildcards.study_path}/genetic_correlation/{wildcards.study}
+            fi
         fi
         """
 
