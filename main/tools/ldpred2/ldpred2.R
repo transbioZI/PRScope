@@ -6,8 +6,10 @@ options(default.nproc.blas = NULL)
 library(tools)
 library(argparser, quietly=T)
 library(stringr)
+library(ggplot2)
 
 ### Maybe there's some environment variable availble to determine the location of the script instead
+startTime <- Sys.time()
 coms <- commandArgs()
 coms <- coms[substr(coms, 1, 7) == '--file=']
 dirScript <- dirname(substr(coms, 8, nchar(coms)))
@@ -26,6 +28,7 @@ par <- add_argument(par, "--file-keep-snps", help="File with RSIDs of SNPs to ke
 par <- add_argument(par, "--ld-file", default="/ldpred2_ref/ldref_hm3_plus/LD_with_blocks_chr@.rds", help="LD reference files, split per chromosome; chr label should be indicated by '@' symbol")
 par <- add_argument(par, "--ld-meta-file", default="/ldpred2_ref/map_hm3_plus.rds", help="list of variants in --ld-file")
 
+# +
 # Genotype
 par <- add_argument(par, "--geno-impute-zero", help="Set missing genotypes to zero.", flag=T)
 # Sumstats file.
@@ -46,8 +49,10 @@ par <- add_argument(par, "--n-controls", help="Nr controls when phenotype is bin
 # Polygenic score
 par <- add_argument(par, "--name-score", help="Set column name for the created score", nargs=1, default='score')
 # Parameters to LDpred
-par <- add_argument(par, "--hyper-p-length", help="Length of hyperparameter p sequence to use for --ldpred-mode auto", default=50)
+par <- add_argument(par, "--hyper-p-length", help="Length of hyperparameter p sequence to use for --ldpred-mode auto", default=30)
 par <- add_argument(par, "--hyper-p-max", help="Maximum (<1) of hyperparameter p sequence to use for --ldpred-mode auto", default=0.2)
+par <- add_argument(par, "--observed-h2", help="Heritability", default=0.05)
+
 # Others
 par <- add_argument(par, "--ldpred-mode", help='Ether "auto" or "inf" (infinitesimal)', default="inf")
 par <- add_argument(par, "--cores", help="Number of CPU cores to use, otherwise use the available number of cores minus 1", default=nb_cores())
@@ -55,6 +60,7 @@ par <- add_argument(par, '--set-seed', help="Set a seed for reproducibility", na
 par <- add_argument(par, "--merge-by-rsid", help="Merge using rsid (the default is to merge by chr:bp:a1:a2 codes).", flag=TRUE)
 par <- add_argument(par, "--genomic-build", help="Genomic build to use. Either hg19, hg18 or hg38", default="hg19", nargs=1)
 par <- add_argument(par, "--tmp-dir", help="Directory to store temporary files. Default is output of base::tempdir()", default=tempdir())
+# -
 
 parsed <- parse_args(par)
 
@@ -90,6 +96,7 @@ colStat <- parsed$col_stat
 colStatSE <- parsed$col_stat_se
 colPValue <- parsed$col_pvalue
 colN <- parsed$col_n
+h2_est <- parsed$observed_h2
 mergeByRsid <- parsed$merge_by_rsid
 
 # unset colBP in case of merging by rsid
@@ -256,7 +263,29 @@ df_beta <- snp_match(df_beta, map_ldref, join_by_pos=!mergeByRsid, match.min.pro
 drops <- c("_NUM_ID_.ss", "rsid.ss", 'block_id', 'pos_hg18', 'pos_hg38')
 df_beta <- df_beta[ , !(names(df_beta) %in% drops)]  
 
-write(paste0('nrow_sumstats:',nrow(df_beta)),file=fileOutputHer, append=TRUE)
+# +
+sd_val <- with(df_beta, sqrt(2 * af_UKBB * (1 - af_UKBB)))
+sd_y_est = median(sd_val * df_beta$beta_se * sqrt(df_beta$n_eff))
+sd_ss = with(df_beta, sd_y_est / sqrt(n_eff * beta_se^2))
+is_bad <-sd_ss < (0.5 * sd_val) | sd_ss > (sd_val + 0.1) | sd_ss < 0.1 | sd_val < 0.05
+
+png(paste0(fileOutputPlot,'.2'), res=300, unit='px',height=2000, width=2000)
+  plot_obj <- qplot(sd_val, sd_ss, color = is_bad) +
+    theme_bigstatsr() +
+    coord_equal() +
+    scale_color_viridis_d(direction = -1) +
+    geom_abline(linetype = 2, color = "red") +
+    labs(x = "Standard deviations in the validation set",
+        y = "Standard deviations derived from the summary statistics",
+        color = "Removed?")
+  print(plot_obj)
+dev.off()
+
+cat(paste0('Sumstats contains ', nrow(df_beta[!is_bad, ]),' after additional genotype SD check.\n'))
+
+df_beta = df_beta[!is_bad, ]
+cat("SNP-based heritability is ",h2_est,"\n")
+# -
 
 cat('\n### Loading LD reference from ', fileLD, '\n')
 tmp_file <- tempfile(tmpdir=parsed$tmp_dir)
@@ -285,15 +314,26 @@ for (chr in chr2use) {
   }
 }
 
+# +
 cat('\n### Running LD score regression\n')
-ldsc <- with(df_beta, snp_ldsc(ld, ld_size, chi2=(beta/beta_se)^2, sample_size=n_eff, blocks = NULL, ncores=NCORES))
-h2_est <- ldsc[["h2"]]
-#h2_est_se <- ldsc[["h2_se"]]
-cat('Results:', 'Intercept =', ldsc[["int"]], 'H2 =', h2_est, '\n')
 
-if(h2_est < 0) {
+if(h2_est < 0.05){
+    h2_est <- 0.05
+    cat('SNP-based heritability was set to 0.05.\n')
+}
+
+if(h2_est > 1){
+    h2_est <- 1
+    cat('SNP-based heritability was set to 1.\n')
+}
+# -
+
+# If more than half the variants have the wrong SD then the N is probably inaccurate
+# Recompute N based on BETA and SE
+if(sum(is_bad) > (length(is_bad)*0.5)) {
+  cat(paste0('>50% of variants had a discordant SD.\n'))
+  cat('>50% of variants had a discordant SD. Check the sample size in the sumstats.\n')
   writeLines(c(paste0("FID IID ",nameScore)),fileOutput)
-  cat('\n### h2_init < 0, calculation finished with an empty result\n')
 } else {
 cat('\n### Starting polygenic scoring\n')
 # LDPRED2-Inf: Infinitesimal model
@@ -304,11 +344,11 @@ if (argLdpredMode == 'inf') {
 } else if (argLdpredMode == 'auto') {
   cat('Running LDPRED2 auto model\n')
   if (!is.na(setSeed)) set.seed(setSeed)
-  sh_cor = sort(runif(dim(map_ldref)[1], min = 0.6, max = 0.99))[dim(df_beta)[1]]
+  sh_cor = sort(runif(dim(map_ldref)[1], min = 0.7, max = 0.95))[dim(df_beta)[1]]
   multi_auto <- snp_ldpred2_auto(corr, df_beta, h2_init=h2_est, vec_p_init=seq_log(1e-4, parHyperPMax, length.out=parHyperPLength), 
-                                 allow_jump_sign=F, shrink_corr=sh_cor, ncores=NCORES, burn_in = 500, num_iter = 400)
+                                 allow_jump_sign=F, shrink_corr=sh_cor, ncores=NCORES)
   cat('Plotting diagnostics: ', fileOutputPlot, '\n', sep='')
-  library(ggplot2)
+  cat('shrink_corr: ', sh_cor, '\n', sep='')
   auto <- multi_auto[[1]]
   dta <- data.frame(path_p_est=auto$path_p_est, path_h2_est=auto$path_h2_est, x=1:length(auto$path_p_est))
   plt <- plot_grid(
@@ -352,6 +392,7 @@ tryCatch(
 )
 obj.bigSNP$fam[,nameScore] <- pred_all
 
+# +
 cat('\n### Writing file with PGS\n')
 if (fileOutputMerge) cat('Merging by', paste0(fileOutputMergeIDs, collapse=', '), '\n')
 writeScore(obj.bigSNP$fam, fileOutput, nameScore, fileOutputMerge, fileOutputMergeIDs)
@@ -359,3 +400,13 @@ cat('Scores written to', fileOutput, '\n')
 }
 # Drop temporary file
 fileRemoved <- file.remove(paste0(tmp_file, '.sbk'))
+
+endTime <- Sys.time()
+
+cat(paste0("Total:",endTime - startTime,"\n"))
+
+# -
+
+Sys.time()
+
+

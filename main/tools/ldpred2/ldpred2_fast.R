@@ -8,12 +8,19 @@ library(argparser, quietly=T)
 library(stringr)
 library(data.table)
 library(doParallel)
+library(RhpcBLASctl)
+blas_set_num_threads(8)
+#Sys.setenv(OMP_NUM_THREADS=1)
 
+# +
 ### Maybe there's some environment variable availble to determine the location of the script instead
+startTime <- Sys.time()
+
 coms <- commandArgs()
 coms <- coms[substr(coms, 1, 7) == '--file=']
 dirScript <- dirname(substr(coms, 8, nchar(coms)))
 source(paste0(dirScript, '/fun.R'))
+# -
 
 par <- arg_parser('Calculate polygenic scores using ldpred2')
 # Mandatory arguments (files)
@@ -62,11 +69,6 @@ parsed <- parse_args(par)
 
 ### Mandatory
 fileGeno <- parsed$geno_file_rds
-fileSumstats <- parsed$sumstats
-fileOutput <- parsed$out
-fileOutputPlot <- fileOutput # diagnostic plot
-fileOutputHer <- fileOutput # diagnostic plot
-fileOutputLDReg <- fileOutput
 fileLD <- parsed$ld_file
 fileMetaLD <- parsed$ld_meta_file
 
@@ -130,60 +132,86 @@ cat('Loading backingfile:', fileGeno ,'\n')
 suppressPackageStartupMessages(library(bit64))
 obj.bigSNP <- snp_attach(fileGeno)
 detach("package:bit64", unload = TRUE)
+cat("step 1","\n", file="/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/runtime.txt", append=TRUE)
 
 # Store some key variables
 G <- obj.bigSNP$genotypes
 CHR <- obj.bigSNP$map$chromosome
 POS <- obj.bigSNP$map$physical.pos
-NCORES <- parsed$cores
+NCORES <- 8 #parsed$cores
+cat("step 2","\n", file="/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/runtime.txt", append=TRUE)
 
 # Check genotype data for missingness
 if (genoImputeZero) {
   cat('### Imputing missing genotypes with zero\n')
   G <- zeroMissingGenotypes(G)
 }
+cat("step 3","\n", file="/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/runtime.txt", append=TRUE)
 
+# +
 reference_LD_list = list()
 for (chr in chr2use) {
   fileLD_chr <- str_replace(fileLD, "@", toString(chr))
   reference_LD_list[[chr]] <- readRDS(fileLD_chr)
 }
 
-studies = fread("",data.table = F)
-tmp_path = "" # todo change
-fileOutput = "" # todo change
-res_result = "" # todo change
-number_of_threads = 20
+cat("step 4","\n", file="/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/runtime.txt", append=TRUE)  
+# -
 
-map_ldref_hg19 <- readRDS(fileMetaLD)
+studies = fread("/home/jupyter/workspaces/multipgsaud/data/gwas/final_list.genetic_correlation.ldpred.tsv",data.table = F)
+tmp_path = "/home/jupyter/workspaces/multipgsaud/tmp" 
+fileOutput = "/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res" 
+res_result = "/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/done.txt"
+number_of_threads = 1
+cat("step 5","\n", file="/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/runtime.txt", append=TRUE)
+
+#map_ldref_hg19 <- readRDS(fileMetaLD)
 map_ldref_hg38 <- readRDS(fileMetaLD)
 map_ldref_hg38$pos <- map_ldref_hg38$pos_hg38
 map_ldref_hg38$pos_hg38 <- NULL
+cat("step 6","\n", file="/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/runtime.txt", append=TRUE)
 
-cl <- makeCluster(number_of_threads)
-registerDoParallel(cl)
+#cl <- makeCluster(number_of_threads)
+#registerDoParallel(cl)
+cat("step 7","\n", file="/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/runtime.txt", append=TRUE)
+colMap <- c('chr', 'rsid', 'pos', 'a1', 'a0')
+map <- setNames(obj.bigSNP$map[-3], colMap)
+map_ldref = map_ldref_hg38
+obj_fam = obj.bigSNP$fam
+write.table(obj_fam, "/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/obj_fam.fam", row.names = F, col.names = F, quote = F, sep = "\t")
 
-res = foreach(st=1:nrow(studies)) %dopar% {
-    genomic_build = studies$genome_build[st]
-    if(genomic_build == "hg37") {
-        map_ldref = map_ldref_hg19
-    } else {
-        map_ldref = map_ldref_hg38
-    }
-    results_fam = obj.bigSNP$fam
+res = c()
+for(st in c(1:nrow(studies))) {
+    #require(bigsnpr)
+    #require(stringr)
+    #require(data.table)
+    
+    startTime1 <- Sys.time()
+    
+    #genomic_build = studies$genome_build[st]
+    #if(genomic_build == "hg37") {
+    #    map_ldref = map_ldref_hg19
+    #} else {
+    #    map_ldref = map_ldref_hg38
+    #}
+    
     nameScore = studies$study_id[st]
+    cat(paste0(nameScore,": start","\n"))
+    
     NEFF = studies$neff[st]
-    dirPlot <- dirname(fileOutput)
-    fileOutputPlot <- paste0(dirPlot, '/', nameScore, '.png')
-    fileOutputResults <- paste0(dirPlot, '/', nameScore, '.tsv')
-    fileSumstats = paste0("path_to_gwas/",nameScore,"/ldpred/",nameScore,".qced.h.tsv.gz")
+    
+    fileOutputPlot <- paste0(fileOutput, '/', nameScore, '.png')
+    fileOutputResults <- paste0(fileOutput, '/', nameScore, '.tsv')
+    fileSumstats = paste0(studies$path[st],"/ldpred/",nameScore,".qced.h.tsv.gz")
 
     cat('\n### Reading summary statistics', fileSumstats,'\n')
+    
     sumstats <- bigreadr::fread2(fileSumstats)
     cat('Loaded', nrow(sumstats), 'SNPs\n')
     # Rename columns in bigSNP object
-    colMap <- c('chr', 'rsid', 'pos', 'a1', 'a0')
-    map <- setNames(obj.bigSNP$map[-3], colMap)
+    
+    cat(paste0(nameScore,": read sumstat","\n"))
+    
     tmpdir = paste0(tmp_path,"/",nameScore)
 
     if (!file.exists(tmpdir)){
@@ -207,6 +235,8 @@ res = foreach(st=1:nrow(studies)) %dopar% {
             }
         }
         cat('Columns in ', basename(fileSumstats), ': ', paste0(colSumstats, collapse=' | '), '\n', sep='')
+        cat(paste0(nameScore,": Necessary columns not found","\n"), file="/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/runtime.txt", append=TRUE)
+    
         stop('Necessary columns not found')
     }
 
@@ -259,6 +289,7 @@ res = foreach(st=1:nrow(studies)) %dopar% {
     ld_size <- 0; corr <- NULL
     for (chr in chr2use) {
     ## indices in 'df_beta' corresponding to a particular 'chr'
+        cat('\n### load ',chr,'\n')
         ind.chr <- which(df_beta$chr == chr)
         if (length(ind.chr) == 0) next
         ## indices in 'map_ldref'
@@ -268,6 +299,8 @@ res = foreach(st=1:nrow(studies)) %dopar% {
 
         num_ldref_snps <- sum(map_ldref$chr == chr)
         ld_size <- ld_size + num_ldref_snps
+        
+        cat('\t', 'loading LD for', length(ind.chr),  'out of', num_ldref_snps, 'SNPs\n')
 
         corr_chr <- reference_LD_list[[chr]][ind.chr3, ind.chr3]
 
@@ -277,17 +310,19 @@ res = foreach(st=1:nrow(studies)) %dopar% {
             corr$add_columns(corr_chr, nrow(corr))
         }
     }
-
+    cat('\n### Heritability ','\n')
     ldsc <- with(df_beta, snp_ldsc(ld, ld_size, chi2=(beta/beta_se)^2, sample_size=NEFF, blocks = NULL, ncores=NCORES))
     h2_est <- ldsc[["h2"]]
+    did_work = TRUE
     if(h2_est < 0) {
         cat('\n### h2_init < 0, calculation finished with an empty result\n')
-        results_fam[,nameScore] = rep(NA,dim(results_fam)[1])
+        results_fam = rep(NA,dim(obj_fam)[1])
+        did_work = FALSE
     } else {
         cat('Running LDPRED2 auto model\n')
         if (!is.na(setSeed)) set.seed(setSeed)
-
-        sh_cor = sort(runif(dim(map_ldref)[1], min = 0.6, max = 0.99))[dim(df_beta)[1]]
+        
+        sh_cor = sort(runif(length(c(1:1610453)), min = 0.5, max = 1))[dim(df_beta)[1]]
 
         multi_auto <- snp_ldpred2_auto(corr, df_beta, h2_init=h2_est, vec_p_init=seq_log(1e-4, parHyperPMax, length.out=parHyperPLength),
                                     allow_jump_sign=F, shrink_corr=sh_cor, ncores=NCORES, burn_in = 500, num_iter = 400)
@@ -326,27 +361,36 @@ res = foreach(st=1:nrow(studies)) %dopar% {
         map_pgs <- df_beta[1:4]; map_pgs$beta <- 1
         map_pgs2 <- snp_match(map_pgs, map, join_by_pos=!mergeByRsid, match.min.prop=0)
 
-        tryCatch(
-            pred_all <- big_prodVec(G, beta * map_pgs2$beta, ind.col=map_pgs2[['_NUM_ID_']], ncores=NCORES),
+        tryCatch({pred_all <- big_prodVec(G, beta * map_pgs2$beta, ind.col=map_pgs2[['_NUM_ID_']], ncores=NCORES)},
             error=function(er) {
                 cat('bigstatsr::big_prodVec threw an error:\n')
                 message(er)
                 cat('\n\nErrors regarding "missingness in X" may be solved by imputing genotype data or passing --geno-impute-zero\n')
                 er
-                quit(status=1, save='no')
-        },
-            warning=function(er) {
+                did_work = FALSE
+                pred_all = rep(NA,dim(obj_fam)[1])
+            }, warning=function(er) {
                 cat('bigstatsr::big_prodVec threw a warning:\n')
                 message(er)
-            }
-        )
+            })
 
-        results_fam[,nameScore] = pred_all
+        results_fam = pred_all
     }
-
-    write.table(results_fam, fileOutputResults, row.names = F, col.names = F, quote = F, sep = "\t")
+                       
+    writeLines(as.character(results_fam), fileOutputResults)
     file.remove(paste0(tmp_file, '.sbk'))
+    endTime1 <- Sys.time()
+    cat(paste0(nameScore,":",endTime1 - startTime1,"\n"), file="/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/runtime.txt", append=TRUE)
+    res = c(res,did_work)
+    #did_work
 }
 
+# +
 writeLines(as.character(res), res_result)
-stopCluster(cl)
+
+#stopCluster(cl)
+
+endTime <- Sys.time()
+
+cat(paste0("Total:",endTime - startTime,"\n"), file="/home/jupyter/workspaces/multipgsaud/data/gwas/ldpred_res/runtime.txt", append=TRUE)
+    

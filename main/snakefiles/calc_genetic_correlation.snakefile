@@ -67,7 +67,7 @@ rule munge_study:
 
 rule calculate_genetic_correlation:
     input:
-        "{study_path}" + "/munged/{study}.sumstats.gz"
+        expand("{study_path}" + "/munged/{study}.sumstats.gz",zip,study = studies_to_calculate_list(), study_path = get_path())
     conda: "../environment_for_ldsc.yaml"
     params:
         command_str = get_genetic_correlation_command,

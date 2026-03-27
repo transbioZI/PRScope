@@ -23,6 +23,10 @@ def get_effective_sample_size(wildcards):
     csvFile = studies_to_calculate()
     return float(csvFile.loc[wildcards.study].neff)
 
+def get_heritability(wildcards):
+    csvFile = studies_to_calculate()
+    return float(csvFile.loc[wildcards.study].observed_h2)
+
 rule all:
     input:
         config['results_path_ldpred'] + '/results' + '.tsv'
@@ -59,8 +63,10 @@ rule calculate_LDSC:
         config['results_path_ldpred'] + '/{study}' + '.' + config['mode']
     params:
         gwas = get_path,
-        neff = get_effective_sample_size
+        neff = get_effective_sample_size,
+        heritability = get_heritability
     conda: "../environment.yaml"
+    threads: 16
     shell:
         """
         mkdir -p {config[results_path_ldpred]}
@@ -73,13 +79,14 @@ rule calculate_LDSC:
             --stat-type BETA \
             --sumstats {params.gwas}/ldpred/{wildcards.study}.qced.h.tsv.gz \
             --out {config[results_path_ldpred]}/{wildcards.study}.{config[mode]} \
-            --cores 5 \
+            --cores {threads} \
             --genomic-build hg38 \
             --name-score {wildcards.study} \
             --col-pvalue P \
             --col-bp BP \
             --col-A1 A1 \
             --col-A2 A2 \
+            --observed-h2 {params.heritability} \
             --col-snp-id SNP \
             --col-chr CHR \
             --ld-meta-file {config[ldpred2_ref]}/map_hm3_plus.rds  \
