@@ -182,9 +182,26 @@ if(problematic_beta == FALSE & problematic_CHR == FALSE ) {
      }
   }
 
-  base = base %>% select(SNP,CHR,BP,A1,A2,BETA,OR,P,SE,N,MAF,VARID)
-  
-  base$NEFF = NEFF
+  if ("NEFF" %in% colnames(base)) {
+    if(all(is.na(base$N))) {
+      base$NEFF = NEFF
+    }
+  } else {
+    base$NEFF = NEFF
+  }
+
+  base$NEFF = suppressWarnings(as.numeric(base$NEFF))
+  tmp_l = dim(base)[1]
+  base = dplyr::filter(base, !(is.na(NEFF)))
+  base = dplyr::filter(base, NEFF>0)
+  tmp_l2 = dim(base)[1]
+  problematic_N = FALSE
+
+  if(tmp_l2 == 0 & tmp_l > 0) {
+    problematic_N = TRUE
+  }
+
+  base = base %>% select(SNP,CHR,BP,A1,A2,BETA,OR,P,SE,N,NEFF,MAF,VARID)
   
   #### Remove SNPs with no beta or OR - these cannot be used by PRSice ####
   base <- dplyr::filter(base, !(is.na(BETA) == TRUE & is.na(OR) == TRUE))
