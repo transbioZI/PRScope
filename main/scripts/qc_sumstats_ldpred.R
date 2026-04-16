@@ -4,7 +4,6 @@ suppressMessages(library(tidyverse))
 suppressMessages(library(data.table))
 suppressMessages(library(optparse))
 suppressMessages(library(dplyr))
-suppressMessages(library(gwasrapidd))
 suppressMessages(library(bigsnpr))
 
 args = commandArgs(trailingOnly=TRUE)
@@ -60,14 +59,16 @@ if(all(c(problematic_p_value, problematic_beta, problematic_MAF_match, problemat
       base = rbind(base,base_other)
       colnames(base)[colnames(base) == "a0"] = "a2"
       colnames(base)[colnames(base) == "pos"] = "bp"
-      colnames(base) = toupper(colnames(base))
-
+      
       if(length(unique(base$neff)) == 1) {
         TotalNeff = base$neff[1]
         base$neff <- 4/((2*base$maf*(1-base$maf))*base$se^2)
         base$neff <-ifelse(base$neff  > 1.1*TotalNeff, 1.1*TotalNeff, base$neff)
         base$neff<-ifelse(base$neff < 0.5*TotalNeff, 0.5*TotalNeff, base$neff)
       }
+      colnames(base) = toupper(colnames(base))
+
+      
     }
 
     write.table(res, metadata, quote = F, sep = "\t", col.names = T, row.names = F)
