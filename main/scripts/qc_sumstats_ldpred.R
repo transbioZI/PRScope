@@ -52,13 +52,22 @@ if(all(c(problematic_p_value, problematic_beta, problematic_MAF_match, problemat
       res$ld_pred_failed = FALSE
       columns = c("varid","snp","chr","pos","a1","a0","p","maf","beta","or","se","neff")
       base <- base[ , columns]
+
       if(dim(base_other)[1] != 0) {
         base_other = base_other[,columns]
       }
+
       base = rbind(base,base_other)
       colnames(base)[colnames(base) == "a0"] = "a2"
       colnames(base)[colnames(base) == "pos"] = "bp"
       colnames(base) = toupper(colnames(base))
+
+      if(length(unique(base$neff)) == 1) {
+        TotalNeff = base$neff[1]
+        base$neff <- 4/((2*base$maf*(1-base$maf))*base$se^2)
+        base$neff <-ifelse(base$neff  > 1.1*TotalNeff, 1.1*TotalNeff, base$neff)
+        base$neff<-ifelse(base$neff < 0.5*TotalNeff, 0.5*TotalNeff, base$neff)
+      }
     }
 
     write.table(res, metadata, quote = F, sep = "\t", col.names = T, row.names = F)
