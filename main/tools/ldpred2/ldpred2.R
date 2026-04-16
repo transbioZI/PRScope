@@ -133,11 +133,11 @@ setSeed <- parsed$set_seed
 # These vectors are used to convert headers in the sumstat files to those
 # used by bigsnpr
 if (mergeByRsid) {
-  colSumstatsOld <- c(colChr, colSNPID, colA1, colA2, colStat, colStatSE)
-  colSumstatToGeno <- c("chr",  "rsid",  "a1",  "a0",  "beta",  "beta_se")
+  colSumstatsOld <- c(colChr, colSNPID, colA1, colA2, colStat, colStatSE, "MAF")
+  colSumstatToGeno <- c("chr",  "rsid",  "a1",  "a0",  "beta",  "beta_se","maf")
 } else {
-  colSumstatsOld <- c(colChr, colSNPID, colBP, colA1, colA2, colStat, colStatSE)
-  colSumstatToGeno <- c("chr",  "rsid",  "pos",  "a1",  "a0",  "beta",  "beta_se")
+  colSumstatsOld <- c(colChr, colSNPID, colBP, colA1, colA2, colStat, colStatSE, "MAF")
+  colSumstatToGeno <- c("chr",  "rsid",  "pos",  "a1",  "a0",  "beta",  "beta_se","maf")
 }
 
 # If the user has requested to merge scores to an existing output file
@@ -264,10 +264,26 @@ drops <- c("_NUM_ID_.ss", "rsid.ss", 'block_id', 'pos_hg18', 'pos_hg38')
 df_beta <- df_beta[ , !(names(df_beta) %in% drops)]  
 
 # +
-sd_val <- with(df_beta, sqrt(2 * af_UKBB * (1 - af_UKBB)))
+# https://github.com/GenomicSEM/GenomicSEM/wiki/2.1-Calculating-Sum-of-Effective-Sample-Size-and-Preparing-GWAS-Summary-Statistics
+
+cat('\n### Colnames ', colnames(df_beta), '\n')
+
+if(length(unique(df_beta$n_eff)) == 1) {
+    cat('\n### Calculating NEFF ', fileLD, '\n')
+    
+    TotalNeff = df_beta$n_eff[1]
+    
+    df_beta$n_eff <- 4/((2*df_beta$maf*(1-df_beta$maf))*df_beta$beta_se^2)
+
+    df_beta$n_eff <-ifelse(df_beta$n_eff  > 1.1*TotalNeff, 1.1*TotalNeff, df_beta$n_eff)
+
+    df_beta$n_eff<-ifelse(df_beta$n_eff < 0.5*TotalNeff, 0.5*TotalNeff, df_beta$n_eff)
+}
+
+sd_val <- with(df_beta, sqrt(2 * maf * (1 - maf)))
 sd_y_est = median(sd_val * df_beta$beta_se * sqrt(df_beta$n_eff))
 sd_ss = with(df_beta, sd_y_est / sqrt(n_eff * beta_se^2))
-is_bad <-sd_ss < (0.5 * sd_val) | sd_ss > (sd_val + 0.1) | sd_ss < 0.1 | sd_val < 0.05
+is_bad <-sd_ss < (0.5 * sd_val) | sd_ss > (sd_val + 0.15) | sd_ss < 0.1 | sd_val < 0.05
 
 png(paste0(fileOutputPlot,'.2'), res=300, unit='px',height=2000, width=2000)
   plot_obj <- qplot(sd_val, sd_ss, color = is_bad) +
@@ -284,7 +300,7 @@ dev.off()
 cat(paste0('Sumstats contains ', nrow(df_beta[!is_bad, ]),' after additional genotype SD check.\n'))
 
 df_beta = df_beta[!is_bad, ]
-cat("SNP-based heritability is ",h2_est,"\n")
+
 # -
 
 cat('\n### Loading LD reference from ', fileLD, '\n')
@@ -316,6 +332,14 @@ for (chr in chr2use) {
 
 # +
 cat('\n### Running LD score regression\n')
+
+ldsc <- with(df_beta, snp_ldsc(ld, ld_size, chi2=(beta/beta_se)^2, sample_size=n_eff, blocks=NULL, ncores=NCORES))
+
+cat("SNP-based heritability is (from tsv)",h2_est,"\n")
+
+h2_est <- ldsc[["h2"]]
+
+cat("SNP-based heritability is (calculated)",h2_est,"\n")
 
 if(h2_est < 0.05){
     h2_est <- 0.05
