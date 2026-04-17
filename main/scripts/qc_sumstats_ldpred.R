@@ -69,27 +69,27 @@ if(all(c(problematic_p_value, problematic_beta, problematic_MAF_match, problemat
         base$neff <-ifelse(base$neff  > 1.1*TotalNeff, 1.1*TotalNeff, base$neff)
         base$neff<-ifelse(base$neff < 0.5*TotalNeff, 0.5*TotalNeff, base$neff)
         
-        sd_val <- with(base, sqrt(2 * maf * (1 - maf)))
-        sd_y_est = median(sd_val * base$se * sqrt(base$neff))
-        sd_ss = with(base, sd_y_est / sqrt(neff * se^2))
-        is_bad <-sd_ss < (0.5 * sd_val) | sd_ss > (sd_val + 0.10) | sd_ss < 0.1 | sd_val < 0.05
-        base = base[!is_bad, ]
-        
-        png(paste0(ldpred_output,".png"), res=300, unit='px',height=2000, width=2000)
-          plot_obj <- qplot(sd_val, sd_ss, color = is_bad) +
-            theme_bigstatsr() +
-            coord_equal() +
-            scale_color_viridis_d(direction = -1) +
-            geom_abline(linetype = 2, color = "red") +
-            labs(x = "Standard deviations in the validation set",
-            y = "Standard deviations derived from the summary statistics",
-            color = "Removed?")
-          print(plot_obj)
-        dev.off()
-        
         cat("End ",dim(base), "\n")
       }
-        
+
+      sd_val <- with(base, sqrt(2 * maf * (1 - maf)))
+      sd_y_est = median(sd_val * base$se * sqrt(base$neff))
+      sd_ss = with(base, sd_y_est / sqrt(neff * se^2))
+      is_bad <-sd_ss < (0.5 * sd_val) | sd_ss > (sd_val + 0.10) | sd_ss < 0.1 | sd_val < 0.05
+      base = base[!is_bad, ]
+
+      png(paste0(ldpred_output,".png"), res=300, unit='px',height=2000, width=2000)
+        plot_obj <- qplot(sd_val, sd_ss, color = is_bad) +
+          theme_bigstatsr() +
+          coord_equal() +
+          scale_color_viridis_d(direction = -1) +
+          geom_abline(linetype = 2, color = "red") +
+          labs(x = "Standard deviations in the validation set",
+          y = "Standard deviations derived from the summary statistics",
+          color = "Removed?")
+        print(plot_obj)
+      dev.off()
+
       colnames(base) = toupper(colnames(base))
     }
     
