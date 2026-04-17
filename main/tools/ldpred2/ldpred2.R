@@ -268,6 +268,8 @@ df_beta <- df_beta[ , !(names(df_beta) %in% drops)]
 
 cat('\n### Colnames ', colnames(df_beta), '\n')
 
+ax = dim(df_beta)[1]
+
 if(length(unique(df_beta$n_eff)) == 1) {
     cat('\n### Calculating NEFF ', '\n')
     
@@ -283,7 +285,6 @@ if(length(unique(df_beta$n_eff)) == 1) {
     sd_y_est = median(sd_val * df_beta$beta_se * sqrt(df_beta$n_eff))
     sd_ss = with(df_beta, sd_y_est / sqrt(n_eff * beta_se^2))
     is_bad <-sd_ss < (0.5 * sd_val) | sd_ss > (sd_val + 0.10) | sd_ss < 0.1 | sd_val < 0.05
-    
     
     png(paste0(fileOutputPlot,'.2'), res=300, unit='px',height=2000, width=2000)
       plot_obj <- qplot(sd_val, sd_ss, color = is_bad) +
@@ -302,7 +303,7 @@ if(length(unique(df_beta$n_eff)) == 1) {
     df_beta = df_beta[!is_bad, ]
 }
 
-
+is_bad = ax - dim(df_beta)[1]
 # -
 
 cat('\n### Loading LD reference from ', fileLD, '\n')
@@ -356,7 +357,7 @@ if(h2_est > 1){
 
 # If more than half the variants have the wrong SD then the N is probably inaccurate
 # Recompute N based on BETA and SE
-if(sum(is_bad) > (length(is_bad)*0.5)) {
+if(is_bad > (ax*0.5)) {
   cat(paste0('>50% of variants had a discordant SD.\n'))
   cat('>50% of variants had a discordant SD. Check the sample size in the sumstats.\n')
   writeLines(c(paste0("FID IID ",nameScore)),fileOutput)
