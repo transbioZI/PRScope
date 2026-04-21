@@ -268,42 +268,42 @@ df_beta <- df_beta[ , !(names(df_beta) %in% drops)]
 
 cat('\n### Colnames ', colnames(df_beta), '\n')
 
-ax = dim(df_beta)[1]
+#ax = dim(df_beta)[1]
 
-if(length(unique(df_beta$n_eff)) == 1) {
-    cat('\n### Calculating NEFF ', '\n')
+#if(length(unique(df_beta$n_eff)) == 1) {
+#    cat('\n### Calculating NEFF ', '\n')
+#    
+#    TotalNeff = df_beta$n_eff[1]
+#    
+#    df_beta$n_eff <- 4/((2*df_beta$maf*(1-df_beta$maf))*df_beta$beta_se^2)
+
+#    df_beta$n_eff <-ifelse(df_beta$n_eff  > 1.1*TotalNeff, 1.1*TotalNeff, df_beta$n_eff)
+
+#    df_beta$n_eff<-ifelse(df_beta$n_eff < 0.5*TotalNeff, 0.5*TotalNeff, df_beta$n_eff)
     
-    TotalNeff = df_beta$n_eff[1]
+#    sd_val <- with(df_beta, sqrt(2 * maf * (1 - maf)))
+#    sd_y_est = median(sd_val * df_beta$beta_se * sqrt(df_beta$n_eff))
+#    sd_ss = with(df_beta, sd_y_est / sqrt(n_eff * beta_se^2))
+#    is_bad <-sd_ss < (0.5 * sd_val) | sd_ss > (sd_val + 0.10) | sd_ss < 0.1 | sd_val < 0.05
     
-    df_beta$n_eff <- 4/((2*df_beta$maf*(1-df_beta$maf))*df_beta$beta_se^2)
+#    png(paste0(fileOutputPlot,'.2'), res=300, unit='px',height=2000, width=2000)
+#      plot_obj <- qplot(sd_val, sd_ss, color = is_bad) +
+#        theme_bigstatsr() +
+#        coord_equal() +
+#        scale_color_viridis_d(direction = -1) +
+#        geom_abline(linetype = 2, color = "red") +
+#        labs(x = "Standard deviations in the validation set",
+#            y = "Standard deviations derived from the summary statistics",
+#            color = "Removed?")
+#      print(plot_obj)
+#    dev.off()
 
-    df_beta$n_eff <-ifelse(df_beta$n_eff  > 1.1*TotalNeff, 1.1*TotalNeff, df_beta$n_eff)
+#    cat(paste0('Sumstats contains ', nrow(df_beta[!is_bad, ]),' after additional genotype SD check.\n'))
 
-    df_beta$n_eff<-ifelse(df_beta$n_eff < 0.5*TotalNeff, 0.5*TotalNeff, df_beta$n_eff)
-    
-    sd_val <- with(df_beta, sqrt(2 * maf * (1 - maf)))
-    sd_y_est = median(sd_val * df_beta$beta_se * sqrt(df_beta$n_eff))
-    sd_ss = with(df_beta, sd_y_est / sqrt(n_eff * beta_se^2))
-    is_bad <-sd_ss < (0.5 * sd_val) | sd_ss > (sd_val + 0.10) | sd_ss < 0.1 | sd_val < 0.05
-    
-    png(paste0(fileOutputPlot,'.2'), res=300, unit='px',height=2000, width=2000)
-      plot_obj <- qplot(sd_val, sd_ss, color = is_bad) +
-        theme_bigstatsr() +
-        coord_equal() +
-        scale_color_viridis_d(direction = -1) +
-        geom_abline(linetype = 2, color = "red") +
-        labs(x = "Standard deviations in the validation set",
-            y = "Standard deviations derived from the summary statistics",
-            color = "Removed?")
-      print(plot_obj)
-    dev.off()
-
-    cat(paste0('Sumstats contains ', nrow(df_beta[!is_bad, ]),' after additional genotype SD check.\n'))
-
-    df_beta = df_beta[!is_bad, ]
+#    df_beta = df_beta[!is_bad, ]
 }
 
-is_bad = ax - dim(df_beta)[1]
+#is_bad = ax - dim(df_beta)[1]
 # -
 
 cat('\n### Loading LD reference from ', fileLD, '\n')
@@ -357,7 +357,8 @@ if(h2_est > 1){
 
 # If more than half the variants have the wrong SD then the N is probably inaccurate
 # Recompute N based on BETA and SE
-if(is_bad > (ax*0.5)) {
+#if(is_bad > (ax*0.5)) {
+if(FALSE) {
   cat(paste0('>50% of variants had a discordant SD.\n'))
   cat('>50% of variants had a discordant SD. Check the sample size in the sumstats.\n')
   writeLines(c(paste0("FID IID ",nameScore)),fileOutput)
