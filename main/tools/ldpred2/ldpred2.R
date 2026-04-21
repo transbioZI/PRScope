@@ -301,7 +301,7 @@ cat('\n### Colnames ', colnames(df_beta), '\n')
 #    cat(paste0('Sumstats contains ', nrow(df_beta[!is_bad, ]),' after additional genotype SD check.\n'))
 
 #    df_beta = df_beta[!is_bad, ]
-}
+#}
 
 #is_bad = ax - dim(df_beta)[1]
 # -
@@ -372,7 +372,7 @@ if (argLdpredMode == 'inf') {
 } else if (argLdpredMode == 'auto') {
   cat('Running LDPRED2 auto model\n')
   if (!is.na(setSeed)) set.seed(setSeed)
-  sh_cor = sort(runif(dim(map_ldref)[1], min = 0.7, max = 0.95))[dim(df_beta)[1]]
+  sh_cor = 0.95 #sort(runif(dim(map_ldref)[1], min = 0.7, max = 0.95))[dim(df_beta)[1]]
   multi_auto <- snp_ldpred2_auto(corr, df_beta, h2_init=h2_est, vec_p_init=seq_log(1e-4, parHyperPMax, length.out=parHyperPLength), 
                                  allow_jump_sign=F, shrink_corr=sh_cor, ncores=NCORES)
   cat('Plotting diagnostics: ', fileOutputPlot, '\n', sep='')
