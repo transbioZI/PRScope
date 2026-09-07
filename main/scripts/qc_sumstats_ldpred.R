@@ -61,14 +61,15 @@ if(all(c(problematic_p_value, problematic_beta, problematic_MAF_match, problemat
       base = rbind(base,base_other)
       colnames(base)[colnames(base) == "a0"] = "a2"
       colnames(base)[colnames(base) == "pos"] = "bp"
-      
+
+
       #if(length(unique(base$neff)) == 1) {
       #  cat("Start ",dim(base), "\n")
       #  TotalNeff = base$neff[1]
       #  base$neff <- 4/((2*base$maf*(1-base$maf))*base$se^2)
       #  base$neff <-ifelse(base$neff  > 1.1*TotalNeff, 1.1*TotalNeff, base$neff)
       #  base$neff<-ifelse(base$neff < 0.5*TotalNeff, 0.5*TotalNeff, base$neff)
-        
+
       #  cat("End ",dim(base), "\n")
       #}
 
@@ -89,6 +90,8 @@ if(all(c(problematic_p_value, problematic_beta, problematic_MAF_match, problemat
       #    color = "Removed?")
       #  print(plot_obj)
       #dev.off()
+
+      base = base[!is.na(base$se),]
 
       colnames(base) = toupper(colnames(base))
     }

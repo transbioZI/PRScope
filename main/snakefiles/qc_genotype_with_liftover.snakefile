@@ -180,7 +180,7 @@ rule remove_het:
         """Rscript {config[repository]}/scripts/het.R {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]} {wildcards.target_data_name}.QC1 FINAL.fail_het_imiss.sample $(which plink) {config[heterozygosity]}
         plink \
             --bfile {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC1 \
-            --remove-fam {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL.fail_het_imiss.sample \
+            --remove {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL.fail_het_imiss.sample \
             --allow-no-sex \
             --make-bed \
             --out {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC2
@@ -197,7 +197,7 @@ rule exclude_related_samples:
         """Rscript {config[repository]}/scripts/relatedSamples.R {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]} {wildcards.target_data_name}.QC2 FINAL.related.samples $(which plink) {config[genotype]} {config[relatedness]}
         plink \
             --bfile {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC2 \
-            --remove-fam {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL.related.samples\
+            --remove {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.FINAL.related.samples\
             --make-bed \
             --allow-no-sex \
             --out {config[output_path]}/corrected_{config[genotype]}/{config[processed_data_directory_name]}/{wildcards.target_data_name}.QC3
