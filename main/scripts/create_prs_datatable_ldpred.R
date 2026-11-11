@@ -12,6 +12,7 @@ mode = args[2]
 study_list = args[3]
 
 studi_df = fread(study_list)
+studi_df = studi_df[studi_df$genetic_correlation_passed == T,]
 
 files = studi_df$study_id
 
